@@ -1,0 +1,6 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/MinGo.IdServer.Admin/MinGo.IdServer.Admin.csproj" />
+    <Project Path="src/MinGo.IdServer/MinGo.IdServer.csproj" />
+  </Folder>
+</Solution>

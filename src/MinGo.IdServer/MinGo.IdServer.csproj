@@ -1,0 +1,23 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <AssemblyName>MinGo.IdServer</AssemblyName>
+    <RootNamespace>MinGo.IdServer</RootNamespace>
+    <UserSecretsId>mingo-identity-idserver-2026</UserSecretsId>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!-- SimpleIdServer Core -->
+    <PackageReference Include="SimpleIdServer.IdServer" />
+    <PackageReference Include="SimpleIdServer.IdServer.Pwd" />
+    <PackageReference Include="SimpleIdServer.IdServer.Email" />
+    <PackageReference Include="SimpleIdServer.IdServer.PostgreSQLMigrations" />
+    
+    <!-- EF Core Design Tools -->
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Design">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+  </ItemGroup>
+
+</Project>

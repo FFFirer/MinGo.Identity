@@ -1,0 +1,48 @@
+<Project>
+  <PropertyGroup>
+    <!-- Enable Central Package Management -->
+    <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
+    <CentralPackageVersionOverrideEnabled>true</CentralPackageVersionOverrideEnabled>
+  </PropertyGroup>
+
+  <!-- ==================== SimpleIdServer Ecosystem ==================== -->
+  <ItemGroup>
+    <PackageVersion Include="SimpleIdServer.IdServer" Version="6.0.4" />
+    <PackageVersion Include="SimpleIdServer.IdServer.Pwd" Version="6.0.4" />
+    <PackageVersion Include="SimpleIdServer.IdServer.Email" Version="6.0.4" />
+    <PackageVersion Include="SimpleIdServer.IdServer.PostgreSQLMigrations" Version="6.0.4" />
+    <PackageVersion Include="SimpleIdServer.IdServer.Website" Version="6.0.4" />
+    <PackageVersion Include="SimpleIdServer.IdServer.Admin" Version="6.0.4" />
+  </ItemGroup>
+
+  <!-- ==================== Entity Framework Core ==================== -->
+  <ItemGroup>
+    <PackageVersion Include="Microsoft.EntityFrameworkCore" Version="9.0.4" />
+    <PackageVersion Include="Microsoft.EntityFrameworkCore.Design" Version="9.0.4" />
+    <PackageVersion Include="Microsoft.EntityFrameworkCore.Tools" Version="9.0.4" />
+  </ItemGroup>
+
+  <!-- ==================== PostgreSQL ==================== -->
+  <ItemGroup>
+    <PackageVersion Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="9.0.4" />
+    <PackageVersion Include="Npgsql" Version="9.0.3" />
+  </ItemGroup>
+
+  <!-- ==================== ASP.NET Core Authentication ==================== -->
+  <ItemGroup>
+    <PackageVersion Include="Microsoft.AspNetCore.Authentication.OpenIdConnect" Version="10.0.0-preview.3.25172.1" />
+  </ItemGroup>
+
+  <!-- ==================== Development Tools ==================== -->
+  <ItemGroup>
+    <PackageVersion Include="Microsoft.VisualStudio.Web.CodeGeneration.Design" Version="10.0.0-preview.3.25208.4" />
+  </ItemGroup>
+
+  <!-- ==================== Testing (Future Use) ==================== -->
+  <ItemGroup>
+    <PackageVersion Include="Microsoft.NET.Test.Sdk" Version="17.13.0" />
+    <PackageVersion Include="xunit" Version="2.9.3" />
+    <PackageVersion Include="xunit.runner.visualstudio" Version="3.0.2" />
+    <PackageVersion Include="coverlet.collector" Version="6.0.4" />
+  </ItemGroup>
+</Project>
