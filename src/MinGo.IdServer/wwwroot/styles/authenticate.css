@@ -1,0 +1,145 @@
+﻿.loginContainer {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding-top: 80px;
+}
+
+.login {
+    width: 400px;
+}
+
+@media (max-width: 600px) {
+    .loginContainer {
+        padding-top: 0px;
+        display: block;
+    }
+
+    .login {
+        width: auto;
+    }
+}
+
+.login .divider {
+    display: flex;
+    align-items: center;
+    margin-top: 1.5rem;
+}
+
+.login .clientinfo {
+    text-align: center;
+    margin-bottom: 30px;
+}
+
+.login .clientinfo img {
+    max-width: 300px;
+}
+
+.login .modal-content {
+    padding: 20px;
+}
+
+.login .divider:before,
+.login .divider:after {
+    content: "";
+    height: 1px;
+    background: var(--sid-separator-bg);
+    flex: 1;
+}
+
+.login .divider .text {
+    margin-right: 1rem;
+    margin-left: 1rem;
+    margin-bottom: 0px;
+    color: var(--bs-gray);
+}
+
+.login .extauth {
+    list-style: none;
+    padding-left: 0px;
+}
+
+.login .extauth > li {
+    margin-top: 5px;
+    margin-bottom: 5px;
+}
+
+.login .extauth > li > a,
+.login button[type='submit'] {
+    width: 100%;
+}
+
+.login .footer {
+    border-top: 1px solid #eee;
+
+}
+
+.progressbar {
+    margin-bottom: 30px;
+    overflow: hidden;
+    color: lightgrey;
+    padding: 0px;
+    display: flex;
+    flex-direction: row;
+}
+
+.progressbar .active {
+    color: var(--bs-primary);
+}
+
+.progressbar li {
+    list-style-type: none;
+    font-size: 15px;
+    float: left;
+    position: relative;
+    font-weight: 400;
+    z-index: 2;
+    flex: 1 1 0;
+    text-align:center;
+}
+
+.progressbar #step1:before {
+    content: "1"
+}
+
+.progressbar #step2:before {
+    content: "2"
+}
+
+.progressbar #step3:before {
+    content: "3"
+}
+
+.progressbar #step4:before {
+    content: "4"
+}
+
+.progressbar li:before {
+    width: 25px;
+    height: 25px;
+    line-height: 20px;
+    display: block;
+    font-size: 15px;
+    color: #ffffff;
+    background: lightgray;
+    border-radius: 50%;
+    text-align: center;
+    margin: 0 auto 10px auto;
+    padding: 2px;
+}
+
+.progressbar li:after {
+    content: '';
+    width: 100%;
+    height: 2px;
+    background: lightgray;
+    position: absolute;
+    left: 0;
+    top: 12px;
+    z-index: -1;
+}
+
+.progressbar li.active:before,
+.progressbar li.active:after {
+    background: var(--bs-primary);
+}

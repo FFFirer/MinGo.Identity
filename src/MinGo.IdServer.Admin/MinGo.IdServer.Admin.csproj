@@ -1,14 +1,26 @@
 <Project Sdk="Microsoft.NET.Sdk.Web">
 
-  <PropertyGroup>
-    <AssemblyName>MinGo.IdServer.Admin</AssemblyName>
-    <RootNamespace>MinGo.IdServer.Admin</RootNamespace>
-    <UserSecretsId>mingo-identity-admin-2026</UserSecretsId>
-  </PropertyGroup>
+	<PropertyGroup>
+		<TargetFramework>net10.0</TargetFramework>
+		<Nullable>enable</Nullable>
+		<ImplicitUsings>enable</ImplicitUsings>
+		<AssemblyName>MinGo.IdServer.Admin</AssemblyName>
+		<RootNamespace>MinGo.IdServer.Admin</RootNamespace>
+		<UserSecretsId>mingo-identity-admin-2026</UserSecretsId>
+	</PropertyGroup>
 
-  <ItemGroup>
-    <!-- SimpleIdServer Admin Website (Blazor) -->
-    <PackageReference Include="SimpleIdServer.IdServer.Website" />
-  </ItemGroup>
+	<ItemGroup>
+		<!-- SimpleIdServer Admin 管理后台（Blazor Interactive Server） -->
+		<PackageReference Include="SimpleIdServer.IdServer.Website" />
+		<PackageReference Include="SimpleIdServer.IdServer.Website.OpenTelemetry" />
 
+		<!-- LibMan 前端库管理 — 取消注释以启用
+		<PackageReference Include="Microsoft.Web.LibraryManager.Build" />
+		-->
+
+		<!-- OpenTelemetry 导出器（模板 IdentityServerAdminConfiguration 代码引用） -->
+		<PackageReference Include="OpenTelemetry.Exporter.Console" />
+		<PackageReference Include="OpenTelemetry.Exporter.OpenTelemetryProtocol" />
+		<PackageReference Include="OpenTelemetry.Exporter.Prometheus.AspNetCore" />
+	</ItemGroup>
 </Project>

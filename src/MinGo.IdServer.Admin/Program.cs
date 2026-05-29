@@ -1,39 +1,57 @@
-using MinGo.IdServer.Admin.Configuration;
+using OpenTelemetry.Trace;
+using MinGo.IdServer.Admin;
+using MinGo.IdServer.Admin.Components;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Blazor Interactive Server setup
+builder.Configuration.AddJsonFile("appsettings.json")
+    .AddJsonFile($"appsettings.{builder.Environment.EnvironmentName}.json", optional: true)
+.AddEnvironmentVariables();
 builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents();
-
-// Admin configuration
-var adminConfig = builder.Configuration.Get<IdentityServerAdminConfiguration>()
-    ?? throw new InvalidOperationException("Admin configuration not found.");
-
-// Configure SimpleIdServer Admin
-var adminBuilder = builder.AddIdserverAdmin(adminConfig.IdserverBaseUrl, o =>
+var idserverAdminConfiguration = builder.Configuration.Get<IdentityServerAdminConfiguration>();
+var adminBuilder = builder.AddIdserverAdmin(idserverAdminConfiguration.IdserverBaseUrl, o =>
 {
-    o.ScimUrl = adminConfig.ScimBaseUrl;
-});
+    o.ScimUrl = idserverAdminConfiguration.ScimBaseUrl;
+}).EnableOpenTelemetry(c =>
+{
+    if(idserverAdminConfiguration.OpenTelemetryOptions == null)
+    {
+        return;
+    }
 
-if (adminConfig.IsRealmEnabled)
+    if(idserverAdminConfiguration.OpenTelemetryOptions.EnableConsoleExporter)
+    {
+        c.AddConsoleExporter();
+    }
+
+    if (idserverAdminConfiguration.OpenTelemetryOptions.EnableOtpExported)
+    {
+        c.AddOtlpExporter(o =>
+        {
+            o.Endpoint = new Uri(idserverAdminConfiguration.OpenTelemetryOptions.TracesEndpoint);
+            o.Headers = idserverAdminConfiguration.OpenTelemetryOptions.Headers;
+            o.Protocol = idserverAdminConfiguration.OpenTelemetryOptions.Protocol;
+        });
+    }
+});
+if(!string.IsNullOrWhiteSpace(idserverAdminConfiguration.DataProtectionPath))
+{
+    adminBuilder.PersistDataprotection(idserverAdminConfiguration.DataProtectionPath);
+}
+
+if(idserverAdminConfiguration.IsRealmEnabled)
 {
     adminBuilder.EnableRealm();
 }
 
-if (adminConfig.ForceHttps)
+if (idserverAdminConfiguration.ForceHttps)
 {
     adminBuilder.ForceHttps();
 }
 
-adminBuilder.UpdateOpenid(
-    adminConfig.ClientId,
-    adminConfig.ClientSecret,
-    adminConfig.Scopes,
-    adminConfig.IgnoreCertificateError);
-
+adminBuilder.UpdateOpenid(idserverAdminConfiguration.ClientId, idserverAdminConfiguration.ClientSecret, idserverAdminConfiguration.Scopes, idserverAdminConfiguration.IgnoreCertificateError);
 var app = builder.Build();
-
 if (!app.Environment.IsDevelopment())
 {
     app.UseExceptionHandler("/Error");
@@ -42,7 +60,6 @@ if (!app.Environment.IsDevelopment())
 app.UseIdserverAdmin();
 app.UseHttpsRedirection();
 app.UseAntiforgery();
-app.MapRazorComponents<SimpleIdServer.IdServer.Website.App>()
+app.MapRazorComponents<App>()
     .AddInteractiveServerRenderMode();
-
 app.Run();

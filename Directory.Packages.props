@@ -5,16 +5,56 @@
     <CentralPackageVersionOverrideEnabled>true</CentralPackageVersionOverrideEnabled>
   </PropertyGroup>
 
-  <!-- ==================== SimpleIdServer Ecosystem ==================== -->
+  <!-- ==================== SimpleIdServer Ecosystem (7.0.0) ==================== -->
   <ItemGroup>
+    <!-- 核心 -->
     <PackageVersion Include="SimpleIdServer.IdServer" Version="7.0.0" />
+    <PackageVersion Include="SimpleIdServer.IdServer.Store.EF" Version="7.0.0" />
+    <PackageVersion Include="SimpleIdServer.Configuration" Version="7.0.0" />
+    <PackageVersion Include="SimpleIdServer.Configuration.Redis" Version="7.0.0" />
+    <PackageVersion Include="SimpleIdServer.Did.Key" Version="7.0.0" />
+
+    <!-- 认证方式 -->
     <PackageVersion Include="SimpleIdServer.IdServer.Pwd" Version="7.0.0" />
     <PackageVersion Include="SimpleIdServer.IdServer.Email" Version="7.0.0" />
+    <PackageVersion Include="SimpleIdServer.IdServer.Sms" Version="7.0.0" />
+    <PackageVersion Include="SimpleIdServer.IdServer.Otp" Version="7.0.0" />
+    <PackageVersion Include="SimpleIdServer.IdServer.Fido" Version="7.0.0" />
+    <PackageVersion Include="SimpleIdServer.IdServer.VerifiablePresentation" Version="7.0.0" />
+    <PackageVersion Include="SimpleIdServer.IdServer.Saml.Idp" Version="7.0.0" />
+    <PackageVersion Include="SimpleIdServer.IdServer.WsFederation" Version="7.0.0" />
+
+    <!-- 通知推送 -->
+    <PackageVersion Include="SimpleIdServer.IdServer.Notification.Fcm" Version="7.0.0" />
+    <PackageVersion Include="SimpleIdServer.IdServer.Notification.Gotify" Version="7.0.0" />
+
+    <!-- 存储迁移 -->
     <PackageVersion Include="SimpleIdServer.IdServer.PostgreMigrations" Version="7.0.0" />
-    <PackageVersion Include="SimpleIdServer.IdServer.Store.EF" Version="7.0.0" />
-    <PackageVersion Include="SimpleIdServer.IdServer.Website" Version="7.0.0" />
-    <PackageVersion Include="SidFormBuilder.PostgreMigrations" Version="7.0.0" />
+    <PackageVersion Include="SimpleIdServer.IdServer.SqlServerMigrations" Version="7.0.0" />
+    <PackageVersion Include="SimpleIdServer.IdServer.MySQLMigrations" Version="7.0.0" />
+    <PackageVersion Include="SimpleIdServer.IdServer.SqliteMigrations" Version="7.0.0" />
+
+    <!-- 外部身份源 -->
+    <PackageVersion Include="SimpleIdServer.IdServer.Provisioning.SCIM" Version="7.0.0" />
+    <PackageVersion Include="SimpleIdServer.IdServer.Provisioning.LDAP" Version="7.0.0" />
+
+    <!-- Federation / 迁移 -->
+    <PackageVersion Include="SimpleIdServer.IdServer.Federation" Version="7.0.0" />
+    <PackageVersion Include="SimpleIdServer.IdServer.Migrations.Duende" Version="7.0.0" />
+    <PackageVersion Include="SimpleIdServer.IdServer.Migrations.Openiddict" Version="7.0.0" />
+
+    <!-- Swagger / OpenTelemetry / Admin -->
     <PackageVersion Include="SimpleIdServer.IdServer.Swagger" Version="7.0.0" />
+    <PackageVersion Include="SimpleIdServer.IdServer.OpenTelemetry" Version="7.0.0" />
+    <PackageVersion Include="SimpleIdServer.IdServer.Website" Version="7.0.0" />
+    <PackageVersion Include="SimpleIdServer.IdServer.Website.OpenTelemetry" Version="7.0.0" />
+
+    <!-- SidFormBuilder -->
+    <PackageVersion Include="SidFormBuilder.Tailwindcss" Version="7.0.0" />
+    <PackageVersion Include="SidFormBuilder.PostgreMigrations" Version="7.0.0" />
+    <PackageVersion Include="SidFormBuilder.SqlServerMigrations" Version="7.0.0" />
+    <PackageVersion Include="SidFormBuilder.MySQLMigrations" Version="7.0.0" />
+    <PackageVersion Include="SidFormBuilder.SqliteMigrations" Version="7.0.0" />
   </ItemGroup>
 
   <!-- ==================== Entity Framework Core ==================== -->
@@ -22,6 +62,7 @@
     <PackageVersion Include="Microsoft.EntityFrameworkCore" Version="9.0.4" />
     <PackageVersion Include="Microsoft.EntityFrameworkCore.Design" Version="9.0.4" />
     <PackageVersion Include="Microsoft.EntityFrameworkCore.Tools" Version="9.0.4" />
+    <PackageVersion Include="Microsoft.EntityFrameworkCore.SqlServer" Version="9.0.4" />
   </ItemGroup>
 
   <!-- ==================== PostgreSQL ==================== -->
@@ -30,12 +71,51 @@
     <PackageVersion Include="Npgsql" Version="9.0.3" />
   </ItemGroup>
 
-  <!-- ==================== ASP.NET Core Authentication ==================== -->
+  <!-- ==================== 分布式缓存 ==================== -->
   <ItemGroup>
-    <!-- OIDC is handled internally by SimpleIdServer.IdServer.Website package -->
+    <PackageVersion Include="Community.Microsoft.Extensions.Caching.PostgreSql" Version="4.0.6" />
+    <PackageVersion Include="Microsoft.Extensions.Caching.SqlServer" Version="9.0.4" />
+    <PackageVersion Include="Microsoft.Extensions.Caching.StackExchangeRedis" Version="9.0.4" />
+    <PackageVersion Include="NeoSmart.Caching.Sqlite.AspNetCore" Version="8.0.0" />
+    <PackageVersion Include="Pomelo.Extensions.Caching.MySql" Version="2.2.0" />
   </ItemGroup>
 
-  <!-- ==================== Testing (Future Use) ==================== -->
+  <!-- ==================== 后台任务（Hangfire） ==================== -->
+  <ItemGroup>
+    <PackageVersion Include="Hangfire.PostgreSql" Version="1.20.10" />
+    <PackageVersion Include="Hangfire.SqlServer" Version="1.8.18" />
+    <PackageVersion Include="Hangfire.MySqlStorage" Version="2.0.3" />
+    <PackageVersion Include="Hangfire.SQLite" Version="1.4.2" />
+  </ItemGroup>
+
+  <!-- ==================== 消息队列（MassTransit） ==================== -->
+  <ItemGroup>
+    <PackageVersion Include="MassTransit.SqlTransport.SqlServer" Version="8.4.0" />
+  </ItemGroup>
+
+  <!-- ==================== OpenTelemetry ==================== -->
+  <ItemGroup>
+    <PackageVersion Include="OpenTelemetry.Exporter.Console" Version="1.11.0" />
+    <PackageVersion Include="OpenTelemetry.Exporter.OpenTelemetryProtocol" Version="1.12.0" />
+    <PackageVersion Include="OpenTelemetry.Exporter.Prometheus.AspNetCore" Version="1.11.0-beta.1" />
+    <PackageVersion Include="OpenTelemetry.Instrumentation.EntityFrameworkCore" Version="1.11.0-beta.2" />
+  </ItemGroup>
+
+  <!-- ==================== ASP.NET Core 外部认证 ==================== -->
+  <ItemGroup>
+    <PackageVersion Include="Microsoft.AspNetCore.Authentication.Facebook" Version="9.0.4" />
+    <PackageVersion Include="Microsoft.AspNetCore.Authentication.Google" Version="9.0.4" />
+    <PackageVersion Include="Microsoft.AspNetCore.Authentication.Negotiate" Version="9.0.4" />
+  </ItemGroup>
+
+  <!-- ==================== 开发工具 ==================== -->
+  <ItemGroup>
+    <PackageVersion Include="Microsoft.VisualStudio.Web.CodeGeneration.Design" Version="9.0.4" />
+    <PackageVersion Include="Microsoft.Web.LibraryManager.Build" Version="2.1.175" />
+    <PackageVersion Include="Microsoft.AspNetCore.Mvc.Razor.RuntimeCompilation" Version="9.0.4" />
+  </ItemGroup>
+
+  <!-- ==================== 测试（预留） ==================== -->
   <ItemGroup>
     <PackageVersion Include="Microsoft.NET.Test.Sdk" Version="17.13.0" />
     <PackageVersion Include="xunit" Version="2.9.3" />

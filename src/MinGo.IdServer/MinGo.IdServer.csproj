@@ -1,27 +1,365 @@
 <Project Sdk="Microsoft.NET.Sdk.Web">
+	<PropertyGroup>
+		<TargetFramework>net10.0</TargetFramework>
+		<OutputType>Exe</OutputType>
+		<AssemblyName>MinGo.IdServer</AssemblyName>
+		<RootNamespace>MinGo.IdServer</RootNamespace>
+		<UserSecretsId>mingo-identity-idserver-2026</UserSecretsId>
+	</PropertyGroup>
 
-  <PropertyGroup>
-    <AssemblyName>MinGo.IdServer</AssemblyName>
-    <RootNamespace>MinGo.IdServer</RootNamespace>
-    <UserSecretsId>mingo-identity-idserver-2026</UserSecretsId>
-  </PropertyGroup>
+	<!-- ════════════════════════════════════════════════════════════════ -->
+	<!-- SimpleIdServer 核心框架                                        -->
+	<!-- ════════════════════════════════════════════════════════════════ -->
+	<ItemGroup>
+		<!-- 核心包：OIDC/OAuth2/UMA/CIBA 协议实现 -->
+		<PackageReference Include="SimpleIdServer.IdServer" />
+		<!-- EF Core 存储层 -->
+		<PackageReference Include="SimpleIdServer.IdServer.Store.EF" />
+		<!-- 配置管理 -->
+		<PackageReference Include="SimpleIdServer.Configuration" />
+		<!-- OpenTelemetry 可观测性集成 -->
+		<PackageReference Include="SimpleIdServer.IdServer.OpenTelemetry" />
+	</ItemGroup>
 
-  <ItemGroup>
-    <!-- SimpleIdServer Core -->
-    <PackageReference Include="SimpleIdServer.IdServer" />
-    <PackageReference Include="SimpleIdServer.IdServer.Pwd" />
-    <PackageReference Include="SimpleIdServer.IdServer.Email" />
-    <PackageReference Include="SimpleIdServer.IdServer.PostgreMigrations" />
-    <PackageReference Include="SimpleIdServer.IdServer.Store.EF" />
-    <PackageReference Include="SidFormBuilder.PostgreMigrations" />
-    <PackageReference Include="SimpleIdServer.IdServer.Swagger" />
+	<!-- ════════════════════════════════════════════════════════════════ -->
+	<!-- 认证方式                                                       -->
+	<!-- ════════════════════════════════════════════════════════════════ -->
+	<ItemGroup>
+		<!-- ✅ 当前启用 -->
+		<PackageReference Include="SimpleIdServer.IdServer.Pwd" />       <!-- 密码认证 -->
+		<PackageReference Include="SimpleIdServer.IdServer.Email" />     <!-- 邮箱验证码 -->
+		<PackageReference Include="SimpleIdServer.IdServer.Sms" />       <!-- 短信验证码 -->
+		<PackageReference Include="SimpleIdServer.IdServer.Otp" />       <!-- OTP 一次性密码 -->
+		<PackageReference Include="SimpleIdServer.IdServer.Fido" />      <!-- FIDO2/WebAuthn -->
+		<PackageReference Include="SimpleIdServer.IdServer.VerifiablePresentation" />  <!-- 可验证凭证(VP) -->
 
-    <!-- EF Core & PostgreSQL (direct ref to enforce CPM version 9.x over transitive 8.x) -->
-    <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" />
-    <PackageReference Include="Microsoft.EntityFrameworkCore.Design">
-      <PrivateAssets>all</PrivateAssets>
-      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-    </PackageReference>
-  </ItemGroup>
+		<!-- 通知推送 -->
+		<PackageReference Include="SimpleIdServer.IdServer.Notification.Fcm" />     <!-- Firebase Cloud Messaging -->
+		<PackageReference Include="SimpleIdServer.IdServer.Notification.Gotify" />  <!-- Gotify 自托管推送 -->
+	</ItemGroup>
 
+	<!-- ════════════════════════════════════════════════════════════════ -->
+	<!-- 数据库迁移（模板代码引用多后端，仅 PostgreSQL 运行时使用）      -->
+	<!-- ════════════════════════════════════════════════════════════════ -->
+	<ItemGroup>
+		<PackageReference Include="SimpleIdServer.IdServer.PostgreMigrations" />    <!-- ✅ PostgreSQL 主存储 -->
+		<PackageReference Include="SidFormBuilder.PostgreMigrations" />            <!-- ✅ FormBuilder PostgreSQL -->
+		<PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" />       <!-- ✅ Npgsql EF Core -->
+		<PackageReference Include="Community.Microsoft.Extensions.Caching.PostgreSql" />  <!-- ✅ PG 分布式缓存 -->
+
+		<!-- 以下为模板 SidServerSetup 代码引用的其他后端（保持编译通过，运行时由配置切换） -->
+		<PackageReference Include="SimpleIdServer.IdServer.SqlServerMigrations" />
+		<PackageReference Include="SimpleIdServer.IdServer.MySQLMigrations" />
+		<PackageReference Include="SimpleIdServer.IdServer.SqliteMigrations" />
+		<PackageReference Include="SidFormBuilder.SqlServerMigrations" />
+		<PackageReference Include="SidFormBuilder.MySQLMigrations" />
+		<PackageReference Include="SidFormBuilder.SqliteMigrations" />
+		<PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" />
+		<PackageReference Include="Pomelo.Extensions.Caching.MySql" />
+		<PackageReference Include="NeoSmart.Caching.Sqlite.AspNetCore" />
+		<PackageReference Include="Microsoft.Extensions.Caching.SqlServer" />
+	</ItemGroup>
+
+	<!-- ════════════════════════════════════════════════════════════════ -->
+	<!-- 企业级扩展（模板代码引用，默认关闭）                            -->
+	<!-- ════════════════════════════════════════════════════════════════ -->
+	<ItemGroup>
+		<!-- 外部身份提供商（Converters/* + ConfigureAuthSchemeProvider 模板代码引用） -->
+		<PackageReference Include="Microsoft.AspNetCore.Authentication.Facebook" />
+		<PackageReference Include="Microsoft.AspNetCore.Authentication.Google" />
+		<PackageReference Include="Microsoft.AspNetCore.Authentication.Negotiate" />
+
+		<!-- SAML2 / WsFederation / OpenID Federation / DID -->
+		<PackageReference Include="SimpleIdServer.IdServer.Saml.Idp" />
+		<PackageReference Include="SimpleIdServer.IdServer.WsFederation" />
+		<PackageReference Include="SimpleIdServer.IdServer.Federation" />
+		<PackageReference Include="SimpleIdServer.Did.Key" />
+
+		<!-- 外部身份源（SCIM/LDAP 同步） -->
+		<PackageReference Include="SimpleIdServer.IdServer.Provisioning.SCIM" />
+		<PackageReference Include="SimpleIdServer.IdServer.Provisioning.LDAP" />
+
+		<!-- 从 Duende IdentityServer / OpenIddict 迁移 -->
+		<PackageReference Include="SimpleIdServer.IdServer.Migrations.Duende" />
+		<PackageReference Include="SimpleIdServer.IdServer.Migrations.Openiddict" />
+	</ItemGroup>
+
+	<!-- ════════════════════════════════════════════════════════════════ -->
+	<!-- 基础设施                                                       -->
+	<!-- ════════════════════════════════════════════════════════════════ -->
+	<ItemGroup>
+		<PackageReference Include="SidFormBuilder.Tailwindcss" />   <!-- UI：Tailwind CSS -->
+		<PackageReference Include="SimpleIdServer.IdServer.Swagger" />  <!-- Swagger API 文档 -->
+		<PackageReference Include="SimpleIdServer.Configuration.Redis" />  <!-- Redis 配置（模板引用，默认 INMEMORY） -->
+		<PackageReference Include="Microsoft.Extensions.Caching.StackExchangeRedis" />  <!-- Redis 缓存 -->
+
+		<!-- 后台任务 Hangfire（模板引用多后端，仅 PostgreSQL 运行时使用） -->
+		<PackageReference Include="Hangfire.PostgreSql" />
+		<PackageReference Include="Hangfire.SqlServer" />
+		<PackageReference Include="Hangfire.MySqlStorage" />
+		<PackageReference Include="Hangfire.SQLite" />
+
+		<!-- 消息队列 MassTransit（模板引用，默认 INMEMORY） -->
+		<PackageReference Include="MassTransit.SqlTransport.SqlServer" />
+
+		<!-- OpenTelemetry 导出器（模板代码引用，默认关闭） -->
+		<PackageReference Include="OpenTelemetry.Exporter.Console" />
+		<PackageReference Include="OpenTelemetry.Exporter.OpenTelemetryProtocol" />
+		<PackageReference Include="OpenTelemetry.Exporter.Prometheus.AspNetCore" />
+		<PackageReference Include="OpenTelemetry.Instrumentation.EntityFrameworkCore" />
+
+		<!-- EF Core 工具（仅开发时） -->
+		<PackageReference Include="Microsoft.EntityFrameworkCore.Design">
+			<PrivateAssets>all</PrivateAssets>
+			<IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+		</PackageReference>
+	</ItemGroup>
+
+	<!-- ════════════════════════════════════════════════════════════════ -->
+	<!-- 开发工具（可安全删除，当前已注释）                              -->
+	<!-- ════════════════════════════════════════════════════════════════ -->
+	<!-- Microsoft.VisualStudio.Web.CodeGeneration.Design : ASP.NET Core 代码生成器 -->
+	<!-- Microsoft.Web.LibraryManager.Build            : LibMan 前端库管理器       -->
+	<!-- Microsoft.AspNetCore.Mvc.Razor.RuntimeCompilation : Razor 运行时编译      -->
+
+	<!-- ════════════════════════════════════════════════════════════════ -->
+	<!-- 资源文件编译（模板自动生成，勿修改）                            -->
+	<!-- ════════════════════════════════════════════════════════════════ -->
+	<ItemGroup>
+		<Compile Update="Resources\AccountsResource.Designer.cs">
+			<DesignTime>True</DesignTime>
+			<AutoGen>True</AutoGen>
+			<DependentUpon>AccountsResource.resx</DependentUpon>
+		</Compile>
+		<Compile Update="Resources\AuthenticateConsoleResource.Designer.cs">
+		  <DesignTime>True</DesignTime>
+		  <AutoGen>True</AutoGen>
+		  <DependentUpon>AuthenticateConsoleResource.resx</DependentUpon>
+		</Compile>
+		<Compile Update="Resources\AuthenticateOtpResource.Designer.cs">
+		  <DependentUpon>AuthenticateOtpResource.resx</DependentUpon>
+		  <DesignTime>True</DesignTime>
+		  <AutoGen>True</AutoGen>
+		</Compile>
+		<Compile Update="Resources\ConfirmResetPasswordResource.Designer.cs">
+		  <DesignTime>True</DesignTime>
+		  <AutoGen>True</AutoGen>
+		  <DependentUpon>ConfirmResetPasswordResource.resx</DependentUpon>
+		</Compile>
+		<Compile Update="Resources\RegisterPwdResource.Designer.cs">
+			<DesignTime>True</DesignTime>
+			<AutoGen>True</AutoGen>
+			<DependentUpon>RegisterPwdResource.resx</DependentUpon>
+		</Compile>
+		<Compile Update="Resources\RegisterSmsResource.Designer.cs">
+			<DependentUpon>RegisterSmsResource.resx</DependentUpon>
+			<DesignTime>True</DesignTime>
+			<AutoGen>True</AutoGen>
+		</Compile>
+		<Compile Update="Resources\RegisterEmailResource.Designer.cs">
+			<DependentUpon>RegisterEmailResource.resx</DependentUpon>
+			<DesignTime>True</DesignTime>
+			<AutoGen>True</AutoGen>
+		</Compile>
+		<Compile Update="Resources\AuthenticateMobileResource.Designer.cs">
+			<DependentUpon>AuthenticateMobileResource.resx</DependentUpon>
+			<DesignTime>True</DesignTime>
+			<AutoGen>True</AutoGen>
+		</Compile>
+		<Compile Update="Resources\AuthenticateWebauthnResource.Designer.cs">
+			<DependentUpon>AuthenticateWebauthnResource.resx</DependentUpon>
+			<DesignTime>True</DesignTime>
+			<AutoGen>True</AutoGen>
+		</Compile>
+		<Compile Update="Resources\DeviceCodeResource.Designer.cs">
+			<DependentUpon>DeviceCodeResource.resx</DependentUpon>
+			<DesignTime>True</DesignTime>
+			<AutoGen>True</AutoGen>
+		</Compile>
+		<Compile Update="Resources\ProfileResource.Designer.cs">
+			<DependentUpon>ProfileResource.resx</DependentUpon>
+			<DesignTime>True</DesignTime>
+			<AutoGen>True</AutoGen>
+		</Compile>
+		<Compile Update="Resources\AuthenticateSmsResource.Designer.cs">
+			<DependentUpon>AuthenticateSmsResource.resx</DependentUpon>
+			<DesignTime>True</DesignTime>
+			<AutoGen>True</AutoGen>
+		</Compile>
+		<Compile Update="Resources\AuthenticateEmailResource.Designer.cs">
+			<DependentUpon>AuthenticateEmailResource.resx</DependentUpon>
+			<DesignTime>True</DesignTime>
+			<AutoGen>True</AutoGen>
+		</Compile>
+		<Compile Update="Resources\AuthenticatePasswordResource.Designer.cs">
+			<DesignTime>True</DesignTime>
+			<AutoGen>True</AutoGen>
+			<DependentUpon>AuthenticatePasswordResource.resx</DependentUpon>
+		</Compile>
+		<Compile Update="Resources\CredentialsResource.Designer.cs">
+			<DependentUpon>CredentialsResource.resx</DependentUpon>
+			<DesignTime>True</DesignTime>
+			<AutoGen>True</AutoGen>
+		</Compile>
+		<Compile Update="Resources\RegisterVpResource.Designer.cs">
+		  <DesignTime>True</DesignTime>
+		  <AutoGen>True</AutoGen>
+		  <DependentUpon>RegisterVpResource.resx</DependentUpon>
+		</Compile>
+		<Compile Update="Resources\ResetPasswordResource.Designer.cs">
+		  <DesignTime>True</DesignTime>
+		  <AutoGen>True</AutoGen>
+		  <DependentUpon>ResetPasswordResource.resx</DependentUpon>
+		</Compile>
+		<Compile Update="Resources\ScopesResource.Designer.cs">
+			<DependentUpon>ScopesResource.resx</DependentUpon>
+			<DesignTime>True</DesignTime>
+			<AutoGen>True</AutoGen>
+		</Compile>
+		<Compile Update="Resources\CheckSessionResource.Designer.cs">
+			<DesignTime>True</DesignTime>
+			<AutoGen>True</AutoGen>
+			<DependentUpon>CheckSessionResource.resx</DependentUpon>
+		</Compile>
+		<Compile Update="Resources\BCConsentsResource.Designer.cs">
+			<DependentUpon>BCConsentsResource.resx</DependentUpon>
+			<DesignTime>True</DesignTime>
+			<AutoGen>True</AutoGen>
+		</Compile>
+		<Compile Update="Resources\ConsentsResource.Designer.cs">
+			<DesignTime>True</DesignTime>
+			<AutoGen>True</AutoGen>
+			<DependentUpon>ConsentsResource.resx</DependentUpon>
+		</Compile>
+		<Compile Update="Resources\ErrorsResource.Designer.cs">
+			<DesignTime>True</DesignTime>
+			<AutoGen>True</AutoGen>
+			<DependentUpon>ErrorsResource.resx</DependentUpon>
+		</Compile>
+		<Compile Update="Resources\HomeResource.Designer.cs">
+			<DesignTime>True</DesignTime>
+			<AutoGen>True</AutoGen>
+			<DependentUpon>HomeResource.resx</DependentUpon>
+		</Compile>
+		<Compile Update="Resources\LayoutResource.Designer.cs">
+			<DesignTime>True</DesignTime>
+			<AutoGen>True</AutoGen>
+			<DependentUpon>LayoutResource.resx</DependentUpon>
+		</Compile>
+		<Compile Update="Resources\SessionsResource.Designer.cs">
+			<DesignTime>True</DesignTime>
+			<AutoGen>True</AutoGen>
+			<DependentUpon>SessionsResource.resx</DependentUpon>
+		</Compile>
+	</ItemGroup>
+	<ItemGroup>
+		<EmbeddedResource Update="Resources\AccountsResource.resx">
+			<Generator>PublicResXFileCodeGenerator</Generator>
+			<LastGenOutput>AccountsResource.Designer.cs</LastGenOutput>
+		</EmbeddedResource>
+		<EmbeddedResource Update="Resources\AuthenticateConsoleResource.resx">
+		  <Generator>PublicResXFileCodeGenerator</Generator>
+		  <LastGenOutput>AuthenticateConsoleResource.Designer.cs</LastGenOutput>
+		</EmbeddedResource>
+		<EmbeddedResource Update="Resources\AuthenticateOtpResource.resx">
+		  <LastGenOutput>AuthenticateOtpResource.Designer.cs</LastGenOutput>
+		  <Generator>PublicResXFileCodeGenerator</Generator>
+		</EmbeddedResource>
+		<EmbeddedResource Update="Resources\ConfirmResetPasswordResource.resx">
+		  <Generator>PublicResXFileCodeGenerator</Generator>
+		  <LastGenOutput>ConfirmResetPasswordResource.Designer.cs</LastGenOutput>
+		</EmbeddedResource>
+		<EmbeddedResource Update="Resources\RegisterPwdResource.resx">
+			<Generator>PublicResXFileCodeGenerator</Generator>
+			<LastGenOutput>RegisterPwdResource.Designer.cs</LastGenOutput>
+		</EmbeddedResource>
+		<EmbeddedResource Update="Resources\RegisterSmsResource.resx">
+			<LastGenOutput>RegisterSmsResource.Designer.cs</LastGenOutput>
+			<Generator>PublicResXFileCodeGenerator</Generator>
+		</EmbeddedResource>
+		<EmbeddedResource Update="Resources\RegisterEmailResource.resx">
+			<LastGenOutput>RegisterEmailResource.Designer.cs</LastGenOutput>
+			<Generator>PublicResXFileCodeGenerator</Generator>
+		</EmbeddedResource>
+		<EmbeddedResource Update="Resources\AuthenticateMobileResource.resx">
+			<LastGenOutput>AuthenticateMobileResource.Designer.cs</LastGenOutput>
+			<Generator>PublicResXFileCodeGenerator</Generator>
+		</EmbeddedResource>
+		<EmbeddedResource Update="Resources\AuthenticateWebauthnResource.resx">
+			<LastGenOutput>AuthenticateWebauthnResource.Designer.cs</LastGenOutput>
+			<Generator>PublicResXFileCodeGenerator</Generator>
+		</EmbeddedResource>
+		<EmbeddedResource Update="Resources\DeviceCodeResource.resx">
+			<LastGenOutput>DeviceCodeResource.Designer.cs</LastGenOutput>
+			<Generator>PublicResXFileCodeGenerator</Generator>
+		</EmbeddedResource>
+		<EmbeddedResource Update="Resources\ProfileResource.resx">
+			<LastGenOutput>ProfileResource.Designer.cs</LastGenOutput>
+			<Generator>PublicResXFileCodeGenerator</Generator>
+		</EmbeddedResource>
+		<EmbeddedResource Update="Resources\AuthenticateSmsResource.resx">
+			<LastGenOutput>AuthenticateSmsResource.Designer.cs</LastGenOutput>
+			<Generator>PublicResXFileCodeGenerator</Generator>
+		</EmbeddedResource>
+		<EmbeddedResource Update="Resources\AuthenticateEmailResource.resx">
+			<LastGenOutput>AuthenticateEmailResource.Designer.cs</LastGenOutput>
+			<Generator>PublicResXFileCodeGenerator</Generator>
+		</EmbeddedResource>
+		<EmbeddedResource Update="Resources\AuthenticatePasswordResource.resx">
+			<Generator>PublicResXFileCodeGenerator</Generator>
+			<LastGenOutput>AuthenticatePasswordResource.Designer.cs</LastGenOutput>
+		</EmbeddedResource>
+		<EmbeddedResource Update="Resources\CredentialsResource.resx">
+			<LastGenOutput>CredentialsResource.Designer.cs</LastGenOutput>
+			<Generator>PublicResXFileCodeGenerator</Generator>
+		</EmbeddedResource>
+		<EmbeddedResource Update="Resources\RegisterVpResource.resx">
+		  <Generator>PublicResXFileCodeGenerator</Generator>
+		  <LastGenOutput>RegisterVpResource.Designer.cs</LastGenOutput>
+		</EmbeddedResource>
+		<EmbeddedResource Update="Resources\ResetPasswordResource.resx">
+		  <Generator>PublicResXFileCodeGenerator</Generator>
+		  <LastGenOutput>ResetPasswordResource.Designer.cs</LastGenOutput>
+		</EmbeddedResource>
+		<EmbeddedResource Update="Resources\ScopesResource.resx">
+			<LastGenOutput>ScopesResource.Designer.cs</LastGenOutput>
+			<Generator>PublicResXFileCodeGenerator</Generator>
+		</EmbeddedResource>
+		<EmbeddedResource Update="Resources\CheckSessionResource.resx">
+			<Generator>PublicResXFileCodeGenerator</Generator>
+			<LastGenOutput>CheckSessionResource.Designer.cs</LastGenOutput>
+		</EmbeddedResource>
+		<EmbeddedResource Update="Resources\BCConsentsResource.resx">
+			<LastGenOutput>BCConsentsResource.Designer.cs</LastGenOutput>
+			<Generator>PublicResXFileCodeGenerator</Generator>
+		</EmbeddedResource>
+		<EmbeddedResource Update="Resources\ConsentsResource.resx">
+			<Generator>PublicResXFileCodeGenerator</Generator>
+			<LastGenOutput>ConsentsResource.Designer.cs</LastGenOutput>
+		</EmbeddedResource>
+		<EmbeddedResource Update="Resources\ErrorsResource.resx">
+			<Generator>PublicResXFileCodeGenerator</Generator>
+			<LastGenOutput>ErrorsResource.Designer.cs</LastGenOutput>
+		</EmbeddedResource>
+		<EmbeddedResource Update="Resources\HomeResource.resx">
+			<Generator>PublicResXFileCodeGenerator</Generator>
+			<LastGenOutput>HomeResource.Designer.cs</LastGenOutput>
+		</EmbeddedResource>
+		<EmbeddedResource Update="Resources\LayoutResource.resx">
+			<Generator>PublicResXFileCodeGenerator</Generator>
+			<LastGenOutput>LayoutResource.Designer.cs</LastGenOutput>
+		</EmbeddedResource>
+		<EmbeddedResource Update="Resources\SessionsResource.resx">
+			<Generator>PublicResXFileCodeGenerator</Generator>
+			<LastGenOutput>SessionsResource.Designer.cs</LastGenOutput>
+		</EmbeddedResource>
+	</ItemGroup>
+	<ItemGroup>
+	  <None Update="SimpleIdServer.IdServer.xml">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </None>
+	</ItemGroup>
+	<ItemGroup>
+	  <Folder Include="Areas\vp\" />
+	</ItemGroup>
 </Project>

@@ -1,52 +1,28 @@
-using DataSeeder;
-using Microsoft.EntityFrameworkCore;
-using MinGo.IdServer.Seed;
-using SimpleIdServer.IdServer;
-using SimpleIdServer.IdServer.Builders;
+﻿// Copyright (c) SimpleIdServer. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See LICENSE in the project root for license information.
+using Microsoft.AspNetCore.Builder;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
+using MinGo.IdServer;
+using MinGo.IdServer.Conf;
 
-var builder = WebApplication.CreateBuilder(args);
+var webApplicationBuilder = WebApplication.CreateBuilder(args);
+webApplicationBuilder.Services.AddCors(options => options.AddPolicy("AllowAll", p => p.AllowAnyOrigin()
+    .AllowAnyMethod()
+    .AllowAnyHeader()));
+webApplicationBuilder.Configuration
+    .AddJsonFile("appsettings.json")
+    .AddJsonFile($"appsettings.{webApplicationBuilder.Environment.EnvironmentName}.json", optional: true)
+    .AddEnvironmentVariables();
+var identityServerConfiguration = webApplicationBuilder.Configuration.Get<IdentityServerConfiguration>();
+SidServerSetup.ConfigureIdServer(webApplicationBuilder, identityServerConfiguration);
 
-// Get connection string
-var connectionString = builder.Configuration.GetConnectionString("IdServer")
-    ?? throw new InvalidOperationException("Connection string 'IdServer' not found.");
-
-var authority = builder.Configuration["Authority"] ?? "https://localhost:5001";
-
-// Configure SimpleIdServer with PostgreSQL (7.0.0 API)
-var idServerBuilder = builder.AddSidIdentityServer(c =>
-{
-    c.Authority = authority;
-})
-    .AddDeveloperSigningCredential()
-    .UseEfStore(
-        idStore => idStore.UseNpgsql(connectionString, o =>
-        {
-            o.MigrationsAssembly("SimpleIdServer.IdServer.PostgreMigrations");
-            o.UseQuerySplittingBehavior(QuerySplittingBehavior.SplitQuery);
-        }),
-        fbStore => fbStore.UseNpgsql(connectionString, o =>
-        {
-            o.MigrationsAssembly("SidFormBuilder.PostgreMigrations");
-            o.UseQuerySplittingBehavior(QuerySplittingBehavior.SplitQuery);
-        })
-    )
-    .AddPwdAuthentication(true)
-    .AddEmailAuthentication()
-    .AddSwagger(opt =>
-    {
-        opt.IncludeDocumentation<SimpleIdServer.IdServer.TokenTypes.AccessTokenTypeService>();
-    });
-
-// Register custom seed data
-builder.Services.AddTransient<IDataSeeder, AdminUserDataSeeder>();
-
-var app = builder.Build();
-
-// Apply seed data
+var app = webApplicationBuilder.Build();
 app.Services.SeedData();
-
+var hostedServices = app.Services.GetServices<IHostedService>();
+app.UseCors("AllowAll");
 app.UseSid()
     .UseSidSwagger()
     .UseSidSwaggerUi();
-
 app.Run();
