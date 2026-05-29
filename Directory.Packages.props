@@ -7,12 +7,14 @@
 
   <!-- ==================== SimpleIdServer Ecosystem ==================== -->
   <ItemGroup>
-    <PackageVersion Include="SimpleIdServer.IdServer" Version="6.0.4" />
-    <PackageVersion Include="SimpleIdServer.IdServer.Pwd" Version="6.0.4" />
-    <PackageVersion Include="SimpleIdServer.IdServer.Email" Version="6.0.4" />
-    <PackageVersion Include="SimpleIdServer.IdServer.PostgreSQLMigrations" Version="6.0.4" />
-    <PackageVersion Include="SimpleIdServer.IdServer.Website" Version="6.0.4" />
-    <PackageVersion Include="SimpleIdServer.IdServer.Admin" Version="6.0.4" />
+    <PackageVersion Include="SimpleIdServer.IdServer" Version="7.0.0" />
+    <PackageVersion Include="SimpleIdServer.IdServer.Pwd" Version="7.0.0" />
+    <PackageVersion Include="SimpleIdServer.IdServer.Email" Version="7.0.0" />
+    <PackageVersion Include="SimpleIdServer.IdServer.PostgreMigrations" Version="7.0.0" />
+    <PackageVersion Include="SimpleIdServer.IdServer.Store.EF" Version="7.0.0" />
+    <PackageVersion Include="SimpleIdServer.IdServer.Website" Version="7.0.0" />
+    <PackageVersion Include="SidFormBuilder.PostgreMigrations" Version="7.0.0" />
+    <PackageVersion Include="SimpleIdServer.IdServer.Swagger" Version="7.0.0" />
   </ItemGroup>
 
   <!-- ==================== Entity Framework Core ==================== -->
@@ -30,12 +32,7 @@
 
   <!-- ==================== ASP.NET Core Authentication ==================== -->
   <ItemGroup>
-    <PackageVersion Include="Microsoft.AspNetCore.Authentication.OpenIdConnect" Version="10.0.0-preview.3.25172.1" />
-  </ItemGroup>
-
-  <!-- ==================== Development Tools ==================== -->
-  <ItemGroup>
-    <PackageVersion Include="Microsoft.VisualStudio.Web.CodeGeneration.Design" Version="10.0.0-preview.3.25208.4" />
+    <!-- OIDC is handled internally by SimpleIdServer.IdServer.Website package -->
   </ItemGroup>
 
   <!-- ==================== Testing (Future Use) ==================== -->

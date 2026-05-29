@@ -7,11 +7,8 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <!-- SimpleIdServer Admin -->
-    <PackageReference Include="SimpleIdServer.IdServer.Admin" />
-    
-    <!-- OIDC Client -->
-    <PackageReference Include="Microsoft.AspNetCore.Authentication.OpenIdConnect" />
+    <!-- SimpleIdServer Admin Website (Blazor) -->
+    <PackageReference Include="SimpleIdServer.IdServer.Website" />
   </ItemGroup>
 
 </Project>

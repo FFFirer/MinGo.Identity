@@ -1,45 +1,48 @@
-using SimpleIdServer.IdServer.Admin;
+using MinGo.IdServer.Admin.Configuration;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Get IdServer base URL
-var idServerBaseUrl = builder.Configuration["IdServer:BaseUrl"] ?? "https://localhost:5001";
+// Blazor Interactive Server setup
+builder.Services.AddRazorComponents()
+    .AddInteractiveServerComponents();
 
-// Configure Admin services
-builder.Services.AddSidAdmin(options =>
+// Admin configuration
+var adminConfig = builder.Configuration.Get<IdentityServerAdminConfiguration>()
+    ?? throw new InvalidOperationException("Admin configuration not found.");
+
+// Configure SimpleIdServer Admin
+var adminBuilder = builder.AddIdserverAdmin(adminConfig.IdserverBaseUrl, o =>
 {
-    options.IdServerBaseUrl = idServerBaseUrl;
-    options.IsReamEnabled = true;
+    o.ScimUrl = adminConfig.ScimBaseUrl;
 });
 
-// Configure OIDC authentication
-builder.Services.AddAuthentication(options =>
+if (adminConfig.IsRealmEnabled)
 {
-    options.DefaultScheme = "Cookies";
-    options.DefaultChallengeScheme = "oidc";
-})
-.AddCookie("Cookies", options =>
-{
-    options.Cookie.Name = "MinGo.Admin.Session";
-})
-.AddOpenIdConnect("oidc", options =>
-{
-    options.Authority = idServerBaseUrl;
-    options.ClientId = "admin_client";
-    options.ClientSecret = "admin_secret";
-    options.ResponseType = "code";
-    options.Scope.Add("openid");
-    options.Scope.Add("profile");
-    options.Scope.Add("email");
-    options.SaveTokens = true;
-    options.GetClaimsFromUserInfoEndpoint = true;
-});
+    adminBuilder.EnableRealm();
+}
 
-builder.Services.AddAuthorization();
+if (adminConfig.ForceHttps)
+{
+    adminBuilder.ForceHttps();
+}
+
+adminBuilder.UpdateOpenid(
+    adminConfig.ClientId,
+    adminConfig.ClientSecret,
+    adminConfig.Scopes,
+    adminConfig.IgnoreCertificateError);
 
 var app = builder.Build();
 
-app.UseAuthentication();
-app.UseAuthorization();
+if (!app.Environment.IsDevelopment())
+{
+    app.UseExceptionHandler("/Error");
+}
 
-app.Run("https://localhost:5002");
+app.UseIdserverAdmin();
+app.UseHttpsRedirection();
+app.UseAntiforgery();
+app.MapRazorComponents<SimpleIdServer.IdServer.Website.App>()
+    .AddInteractiveServerRenderMode();
+
+app.Run();

@@ -11,8 +11,11 @@
     <PackageReference Include="SimpleIdServer.IdServer" />
     <PackageReference Include="SimpleIdServer.IdServer.Pwd" />
     <PackageReference Include="SimpleIdServer.IdServer.Email" />
-    <PackageReference Include="SimpleIdServer.IdServer.PostgreSQLMigrations" />
-    
+    <PackageReference Include="SimpleIdServer.IdServer.PostgreMigrations" />
+    <PackageReference Include="SimpleIdServer.IdServer.Store.EF" />
+    <PackageReference Include="SidFormBuilder.PostgreMigrations" />
+    <PackageReference Include="SimpleIdServer.IdServer.Swagger" />
+
     <!-- EF Core Design Tools -->
     <PackageReference Include="Microsoft.EntityFrameworkCore.Design">
       <PrivateAssets>all</PrivateAssets>
