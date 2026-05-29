@@ -6,6 +6,7 @@
 		<Nullable>enable</Nullable>
 		<RootNamespace>MinGo.Identity.Migrations</RootNamespace>
 		<AssemblyName>MinGo.Identity.Migrations</AssemblyName>
+		<UserSecretsId>mingo-identity-migrations-2026</UserSecretsId>
 	</PropertyGroup>
 
 	<ItemGroup>
@@ -18,5 +19,7 @@
 			<IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
 		</PackageReference>
 		<PackageReference Include="Microsoft.EntityFrameworkCore.Relational" />
+		<PackageReference Include="Microsoft.Extensions.Configuration.UserSecrets" />
+		<PackageReference Include="Microsoft.Extensions.Configuration.CommandLine" />
 	</ItemGroup>
 </Project>

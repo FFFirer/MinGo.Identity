@@ -7,16 +7,23 @@ namespace MinGo.Identity.Migrations;
 
 /// <summary>
 /// 设计时 DbContext 工厂
-/// dotnet ef migrations add 时会自动调用此工厂
+/// dotnet ef migrations add/remove/list 时自动调用
+///
+/// 配置来源优先级（从高到低）：
+///   1. 命令行参数 --StorageConfiguration:ConnectionString "xxx"
+///   2. UserSecrets（本地开发，dotnet user-secrets set）
+///   3. appsettings.json（项目目录，可选）
+///   4. 默认值（INMEMORY）
 /// </summary>
 public class DesignTimeFactory : IDesignTimeDbContextFactory<ExtStoreDbContext>
 {
     public ExtStoreDbContext CreateDbContext(string[] args)
     {
-        // 尝试从 appsettings.json 读取配置（设计时在 Migrations 项目目录执行）
         var config = new ConfigurationBuilder()
             .SetBasePath(Directory.GetCurrentDirectory())
             .AddJsonFile("appsettings.json", optional: true)
+            .AddUserSecrets<DesignTimeFactory>(optional: true)
+            .AddCommandLine(args ?? [])
             .Build();
 
         var storageConfig = ConfigurationHelper.LoadStorageConfiguration(config);
