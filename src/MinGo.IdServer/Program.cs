@@ -16,7 +16,7 @@ var authority = builder.Configuration["Authority"] ?? "https://localhost:5001";
 var idServerBuilder = builder.AddSidIdentityServer(c =>
 {
     c.Authority = authority;
-}, true)
+})
     .AddDeveloperSigningCredential()
     .UseEfStore(
         idStore => idStore.UseNpgsql(connectionString, o =>
