@@ -1,5 +1,8 @@
 <Solution>
   <Folder Name="/src/">
+    <Project Path="src/MinGo.Identity.Configuration/MinGo.Identity.Configuration.csproj" />
+    <Project Path="src/MinGo.Identity.Migrations/MinGo.Identity.Migrations.csproj" />
+    <Project Path="src/MinGo.Identity.Migrator/MinGo.Identity.Migrator.csproj" />
     <Project Path="src/MinGo.IdServer.Admin/MinGo.IdServer.Admin.csproj" />
     <Project Path="src/MinGo.IdServer/MinGo.IdServer.csproj" />
   </Folder>

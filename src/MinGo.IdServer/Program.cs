@@ -19,8 +19,7 @@ var identityServerConfiguration = webApplicationBuilder.Configuration.Get<Identi
 SidServerSetup.ConfigureIdServer(webApplicationBuilder, identityServerConfiguration);
 
 var app = webApplicationBuilder.Build();
-app.Services.SeedData();
-var hostedServices = app.Services.GetServices<IHostedService>();
+// Seed 数据迁移至 MinGo.Identity.Migrator，部署时统一执行
 app.UseCors("AllowAll");
 app.UseSid()
     .UseSidSwagger()

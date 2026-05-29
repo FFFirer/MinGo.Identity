@@ -1,7 +1,6 @@
 ﻿// Copyright (c) SimpleIdServer. AllClients rights reserved.
 // Licensed under the Apache License, Version 2.0. See LICENSE in the project root for license information.
 using Community.Microsoft.Extensions.Caching.PostgreSql;
-using DataSeeder;
 using FormBuilder;
 using Hangfire;
 using Hangfire.MySql;
@@ -22,9 +21,8 @@ using SimpleIdServer.Configuration.Redis;
 using SimpleIdServer.IdServer.Captcha;
 using SimpleIdServer.IdServer.Domains;
 using SimpleIdServer.IdServer.Options;
-using MinGo.IdServer.Conf.Migrations.AfterDeployment;
-using MinGo.IdServer.Conf.Migrations.BeforeDeployment;
 using MinGo.IdServer.Configurations;
+using MinGo.Identity.Configuration;
 using MinGo.IdServer.Consumers;
 using SimpleIdServer.IdServer.TokenTypes;
 using System;
@@ -58,7 +56,8 @@ public class SidServerSetup
             {
                 c.AddTailwindcss();
             })
-            .EnableMigration()
+            // 注意：迁移现由 MinGo.Identity.Migrator 独立管理
+            // 多节点部署时通过部署流水线执行，非启动时自动执行
             .AddDuendeMigration(a =>
             {
                 ConfigureDuendeMigration(webApplicationBuilder, a);
@@ -155,7 +154,7 @@ public class SidServerSetup
         }
 
         ConfigureDistributedCache(webApplicationBuilder);
-        ConfigureDataseeder(webApplicationBuilder);
+        // Seed 数据迁移至 MinGo.Identity.Migrator，部署时统一执行
     }
 
     private static void ConfigureDuendeMigration(WebApplicationBuilder builder, DbContextOptionsBuilder db)
@@ -474,18 +473,4 @@ public class SidServerSetup
         }
     }
 
-    private static void ConfigureDataseeder(WebApplicationBuilder builder)
-    {
-        builder.Services.AddTransient<IDataSeeder, DropDistributedCacheDataSeeder>();
-        builder.Services.AddTransient<IDataSeeder, ClientTypeDataSeeder>();
-        builder.Services.AddTransient<IDataSeeder, ConfigureAuthSchemeProviderDataSeeder>();
-        builder.Services.AddTransient<IDataSeeder, ConfigureCredentialIssuerDataSeeder>();
-        builder.Services.AddTransient<IDataSeeder, ConfigureFastfedDataSeeder>();
-        builder.Services.AddTransient<IDataSeeder, ConfigureGotifyDataseeder>();
-        builder.Services.AddTransient<IDataSeeder, ConfigureFederationDataseeder>();
-        builder.Services.AddTransient<IDataSeeder, ConfigureAdminWebsiteRedirectUrlsDataSeeder>();
-        builder.Services.AddTransient<IDataSeeder, ConfigureSwaggerClientRedirectUrlsDataSeeder>();
-        // MinGo 自定义：创建默认管理员用户
-        builder.Services.AddTransient<IDataSeeder, ConfigureAdminUserDataSeeder>();
-    }
 }
