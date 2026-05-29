@@ -16,7 +16,8 @@
     <PackageReference Include="SidFormBuilder.PostgreMigrations" />
     <PackageReference Include="SimpleIdServer.IdServer.Swagger" />
 
-    <!-- EF Core Design Tools -->
+    <!-- EF Core & PostgreSQL (direct ref to enforce CPM version 9.x over transitive 8.x) -->
+    <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Design">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
