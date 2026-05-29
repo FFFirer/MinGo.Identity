@@ -66,6 +66,7 @@ public class SidServerSetup
             {
                 ConfigureOpeniddictMigration(webApplicationBuilder, a);
             })
+            .EnableMigration()
             .AddPwdAuthentication(true)
             .AddEmailAuthentication()
             .AddOtpAuthentication()
