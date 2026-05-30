@@ -3,7 +3,6 @@
 using MassTransit;
 using SimpleIdServer.IdServer.IntegrationEvents;
 using System.Threading.Tasks;
-using cl = System.Console;
 
 namespace MinGo.IdServer.Consumers
 {
@@ -11,7 +10,7 @@ namespace MinGo.IdServer.Consumers
     {
         public Task Consume(ConsumeContext<UserLoginSuccessEvent> context)
         {
-            cl.WriteLine("User is authenticated");
+            Console.WriteLine("User is authenticated");
             return Task.CompletedTask;
         }
     }
