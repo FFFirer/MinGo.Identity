@@ -19,32 +19,32 @@ public class IdentityServerAdminConfiguration
     public string DataProtectionPath
     {
         get; set;
-    }
+    } = null!;
 
     public string ScimBaseUrl
     {
         get; set;
-    }
+    } = null!;
     
     public string IdserverBaseUrl
     {
         get; set;
-    }
+    } = null!;
 
     public string ClientId
     {
         get; set;
-    }
+    } = null!;
 
     public string ClientSecret
     {
         get; set;
-    }
+    } = null!;
 
     public List<string> Scopes
     {
         get; set;
-    }
+    } = null!;
 
     public bool IgnoreCertificateError
     {
@@ -54,7 +54,7 @@ public class IdentityServerAdminConfiguration
     public OpenTelemetryOptions OpenTelemetryOptions
     {
         get; set;
-    }
+    } = null!;
 }
 
 public class OpenTelemetryOptions
@@ -77,12 +77,12 @@ public class OpenTelemetryOptions
     public string TracesEndpoint
     {
         get; set;
-    }
+    } = null!;
 
     public string Headers
     {
         get; set;
-    }
+    } = null!;
 
     public OtlpExportProtocol Protocol
     {

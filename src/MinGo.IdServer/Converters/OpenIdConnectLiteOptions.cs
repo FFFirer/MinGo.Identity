@@ -9,13 +9,13 @@ namespace MinGo.IdServer.Converters
     public class OpenIdConnectLiteOptions : IDynamicAuthenticationOptions<OpenIdConnectOptions>
     {
         [ConfigurationRecord("ClientId", "Client Identifier", order: 0, IsRequired = true)]
-        public string ClientId { get; set; }
+        public string ClientId { get; set; } = null!;
         [ConfigurationRecord("ClientSecret", "Client Secret", order: 1, IsRequired = true)]
-        public string ClientSecret { get; set; }
+        public string ClientSecret { get; set; } = null!;
 
         public OpenIdConnectOptions Convert()
         {
-            return null;
+            return null!;
         }
     }
 }

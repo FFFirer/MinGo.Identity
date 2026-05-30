@@ -9,9 +9,9 @@ namespace MinGo.IdServer.Converters
     public class FacebookOptionsLite : IDynamicAuthenticationOptions<FacebookOptions>
     {
         [ConfigurationRecord("AppId", "Application identifier", 0, IsRequired = true)]
-        public string AppId { get; set; }
+        public string AppId { get; set; } = null!;
         [ConfigurationRecord("AppSecret", "Application secret", 1, null, CustomConfigurationRecordType.PASSWORD, IsRequired = true)]
-        public string AppSecret { get; set; }
+        public string AppSecret { get; set; } = null!;
 
         public FacebookOptions Convert() => new FacebookOptions
         {
