@@ -27,8 +27,8 @@ on:
 
 env:
   DOTNET_VERSION: "10.0.x"
-  REGISTRY: ${{ secrets.REGISTRY_URL }}
-  REGISTRY_USER: ${{ secrets.REGISTRY_USERNAME }}
+  REGISTRY: ${{ vars.REGISTRY_URL }}
+  REGISTRY_USER: ${{ vars.REGISTRY_USERNAME }}
   IMAGE_NAME_PREFIX: mingo-identity-
 
 jobs:
