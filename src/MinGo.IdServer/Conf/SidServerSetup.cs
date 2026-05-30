@@ -40,7 +40,7 @@ public class SidServerSetup
         var section = webApplicationBuilder.Configuration.GetSection(nameof(ScimClientOptions));
         var conf = section.Get<ScimClientOptions>();
         var openTelemetrySection = webApplicationBuilder.Configuration.GetSection(nameof(OpenTelemetryOptions));
-        var openTelemetryOptions = openTelemetrySection.Get<OpenTelemetryOptions>();
+        var openTelemetryOptions = openTelemetrySection.Get<OpenTelemetryOptions>() ?? throw new InvalidOperationException($"Configuration section '{nameof(OpenTelemetryOptions)}' is missing");
         var idServerBuilder = webApplicationBuilder.AddSidIdentityServer(c =>
             {
                 c.ForceHttpsEnabled = configuration.ForceHttps;
@@ -161,7 +161,7 @@ public class SidServerSetup
     private static void ConfigureDuendeMigration(WebApplicationBuilder builder, DbContextOptionsBuilder db)
     {
         var section = builder.Configuration.GetSection(nameof(DuendeMigrationOptions));
-        var conf = section.Get<DuendeMigrationOptions>();
+        var conf = section.Get<DuendeMigrationOptions>() ?? throw new InvalidOperationException($"Configuration section '{nameof(DuendeMigrationOptions)}' is missing");
         switch(conf.Transport)
         {
             case StorageTypes.MYSQL:
@@ -185,7 +185,7 @@ public class SidServerSetup
     private static void ConfigureOpeniddictMigration(WebApplicationBuilder builder, DbContextOptionsBuilder db)
     {
         var section = builder.Configuration.GetSection(nameof(OpeniddictMigrationOptions));
-        var conf = section.Get<OpeniddictMigrationOptions>();
+        var conf = section.Get<OpeniddictMigrationOptions>() ?? throw new InvalidOperationException($"Configuration section '{nameof(OpeniddictMigrationOptions)}' is missing");
         switch (conf.Transport)
         {
             case StorageTypes.MYSQL:
@@ -259,7 +259,7 @@ public class SidServerSetup
     private static void ConfigureHangfire(WebApplicationBuilder webApplicationBuilder, IGlobalConfiguration configuration)
     {
         var section = webApplicationBuilder.Configuration.GetSection(nameof(StorageConfiguration));
-        var conf = section.Get<StorageConfiguration>();
+        var conf = section.Get<StorageConfiguration>() ?? throw new InvalidOperationException($"Configuration section '{nameof(StorageConfiguration)}' is missing");
         switch (conf.Type)
         {
             case StorageTypes.INMEMORY:
@@ -269,7 +269,7 @@ public class SidServerSetup
                 configuration.UseSqlServerStorage(conf.ConnectionString);
                 break;
             case StorageTypes.POSTGRE:
-                configuration.UsePostgreSqlStorage(conf.ConnectionString);
+                configuration.UsePostgreSqlStorage(o => o.UseNpgsqlConnection(conf.ConnectionString));
                 break;
             case StorageTypes.MYSQL:
                 configuration.UseStorage(new MySqlStorage(conf.ConnectionString, new MySqlStorageOptions
@@ -293,7 +293,7 @@ public class SidServerSetup
     private static void ConfigureKeyValue(WebApplicationBuilder webApplicationBuilder, AutomaticConfigurationOptions options)
     {
         var section = webApplicationBuilder.Configuration.GetSection(nameof(KeyValueConfiguration));
-        var conf = section.Get<KeyValueConfiguration>();
+        var conf = section.Get<KeyValueConfiguration>() ?? throw new InvalidOperationException($"Configuration section '{nameof(KeyValueConfiguration)}' is missing");
         switch(conf.Type)
         {
             case KeyValueTypes.REDIS:
@@ -305,7 +305,7 @@ public class SidServerSetup
     private static void ConfigureIdserverStorage(WebApplicationBuilder builder, DbContextOptionsBuilder b)
     {
         var section = builder.Configuration.GetSection(nameof(StorageConfiguration));
-        var conf = section.Get<StorageConfiguration>();
+        var conf = section.Get<StorageConfiguration>() ?? throw new InvalidOperationException($"Configuration section '{nameof(StorageConfiguration)}' is missing");
         switch (conf.Type)
         {
             case StorageTypes.SQLSERVER:
@@ -346,7 +346,7 @@ public class SidServerSetup
     private static void ConfigureFormbuilderStorage(WebApplicationBuilder builder, DbContextOptionsBuilder b)
     {
         var section = builder.Configuration.GetSection(nameof(StorageConfiguration));
-        var conf = section.Get<StorageConfiguration>();
+        var conf = section.Get<StorageConfiguration>() ?? throw new InvalidOperationException($"Configuration section '{nameof(StorageConfiguration)}' is missing");
         switch (conf.Type)
         {
             case StorageTypes.SQLSERVER:
@@ -383,7 +383,7 @@ public class SidServerSetup
     private static void ConfigureDistributedCache(WebApplicationBuilder builder)
     {
         var section = builder.Configuration.GetSection(nameof(DistributedCacheConfiguration));
-        var conf = section.Get<DistributedCacheConfiguration>();
+        var conf = section.Get<DistributedCacheConfiguration>() ?? throw new InvalidOperationException($"Configuration section '{nameof(DistributedCacheConfiguration)}' is missing");
         switch (conf.Type)
         {
             case DistributedCacheTypes.SQLSERVER:
@@ -420,7 +420,7 @@ public class SidServerSetup
             case DistributedCacheTypes.SQLITE:
                 builder.Services.AddSqliteCache(options =>
                 {
-                    options.CachePath = conf.ConnectionString;
+                    options.CachePath = conf.ConnectionString!;
                 });
                 break;
         }
@@ -429,7 +429,7 @@ public class SidServerSetup
     private static void ConfigureMessageBroker(WebApplicationBuilder builder, IBusRegistrationConfigurator configurator)
     {
         var section = builder.Configuration.GetSection(nameof(MessageBrokerOptions));
-        var conf = section.Get<MessageBrokerOptions>();
+        var conf = section.Get<MessageBrokerOptions>() ?? throw new InvalidOperationException($"Configuration section '{nameof(MessageBrokerOptions)}' is missing");
         switch (conf.Transport)
         {
             case TransportTypes.SQLSERVER:
@@ -452,14 +452,14 @@ public class SidServerSetup
     private static void ConfigureV2ReCaptcha(WebApplicationBuilder builder, V2ReCaptchaOptions options)
     {
         var section = builder.Configuration.GetSection(nameof(V2ReCaptchaOptions));
-        var conf = section.Get<V2ReCaptchaOptions>();
+        var conf = section.Get<V2ReCaptchaOptions>() ?? throw new InvalidOperationException($"Configuration section '{nameof(V2ReCaptchaOptions)}' is missing");
         options.Secret = conf.Secret;
     }
 
     private static void ConfigureMessageBrokerMigration(WebApplicationBuilder builder)
     {
         var section = builder.Configuration.GetSection(nameof(MessageBrokerOptions));
-        var conf = section.Get<MessageBrokerOptions>();
+        var conf = section.Get<MessageBrokerOptions>() ?? throw new InvalidOperationException($"Configuration section '{nameof(MessageBrokerOptions)}' is missing");
         switch (conf.Transport)
         {
             case TransportTypes.SQLSERVER:

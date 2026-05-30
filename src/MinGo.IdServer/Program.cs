@@ -15,7 +15,7 @@ webApplicationBuilder.Configuration
     .AddJsonFile("appsettings.json")
     .AddJsonFile($"appsettings.{webApplicationBuilder.Environment.EnvironmentName}.json", optional: true)
     .AddEnvironmentVariables();
-var identityServerConfiguration = webApplicationBuilder.Configuration.Get<IdentityServerConfiguration>();
+var identityServerConfiguration = webApplicationBuilder.Configuration.Get<IdentityServerConfiguration>() ?? throw new InvalidOperationException("Configuration section 'IdentityServerConfiguration' is missing");
 SidServerSetup.ConfigureIdServer(webApplicationBuilder, identityServerConfiguration);
 
 var app = webApplicationBuilder.Build();

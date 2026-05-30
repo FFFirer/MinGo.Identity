@@ -9,7 +9,7 @@ builder.Configuration.AddJsonFile("appsettings.json")
 .AddEnvironmentVariables();
 builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents();
-var idserverAdminConfiguration = builder.Configuration.Get<IdentityServerAdminConfiguration>();
+var idserverAdminConfiguration = builder.Configuration.Get<IdentityServerAdminConfiguration>() ?? throw new InvalidOperationException("Configuration section 'IdentityServerAdminConfiguration' is missing");
 var adminBuilder = builder.AddIdserverAdmin(idserverAdminConfiguration.IdserverBaseUrl, o =>
 {
     o.ScimUrl = idserverAdminConfiguration.ScimBaseUrl;
