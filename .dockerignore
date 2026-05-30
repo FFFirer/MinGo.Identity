@@ -1,0 +1,44 @@
+# Git
+.git/
+.gitignore
+
+# .NET build artifacts
+**/bin/
+**/obj/
+**/publish/
+**/out/
+*.binlog
+
+# NuGet
+**/.nuget/
+**/*.nuget.props
+**/*.nuget.targets
+
+# OpenSpec / documentation (not needed at runtime)
+openspec/
+docs/
+*.md
+
+# CI/CD
+.gitea/
+
+# IDE and editor
+.vs/
+.vscode/
+.idea/
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+
+# OpenCode / Agent
+.opencode/
+
+# OS files
+.DS_Store
+Thumbs.db
+nul
+
+# Environment
+.env
+*.env
