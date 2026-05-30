@@ -1,0 +1,38 @@
+# syntax=docker/dockerfile:1
+# =============================================================================
+# MinGo Identity - Migrator
+# Multi-stage Docker build for the database migration console tool
+# =============================================================================
+
+# Stage 1: Build
+FROM mcr.microsoft.com/dotnet/sdk:10.0 AS build
+WORKDIR /src
+
+# Copy project files for restore (layer caching optimization)
+COPY Directory.Build.props Directory.Packages.props nuget.config ./
+COPY src/MinGo.Identity.Configuration/MinGo.Identity.Configuration.csproj src/MinGo.Identity.Configuration/
+COPY src/MinGo.Identity.Migrations/MinGo.Identity.Migrations.csproj src/MinGo.Identity.Migrations/
+COPY src/MinGo.Identity.Migrator/MinGo.Identity.Migrator.csproj src/MinGo.Identity.Migrator/
+
+# Restore with cached packages
+RUN dotnet restore src/MinGo.Identity.Migrator/MinGo.Identity.Migrator.csproj
+
+# Copy source and publish
+COPY . .
+RUN dotnet publish src/MinGo.Identity.Migrator/MinGo.Identity.Migrator.csproj \
+    -c Release \
+    -o /app/publish \
+    --no-restore
+
+# Stage 2: Runtime
+FROM mcr.microsoft.com/dotnet/aspnet:10.0-alpine AS runtime
+WORKDIR /app
+
+# Copy published artifacts
+COPY --from=build /app/publish .
+
+# Default command: migrate (one-shot)
+ENV DOTNET_ENVIRONMENT=Production
+
+ENTRYPOINT ["dotnet", "MinGo.Identity.Migrator.dll"]
+CMD ["migrate"]

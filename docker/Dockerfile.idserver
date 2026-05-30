@@ -1,0 +1,47 @@
+# syntax=docker/dockerfile:1
+# =============================================================================
+# MinGo Identity - IdServer
+# Multi-stage Docker build for the SimpleIdServer OIDC/OAuth2 identity provider
+# =============================================================================
+
+# Stage 1: Build
+FROM mcr.microsoft.com/dotnet/sdk:10.0 AS build
+WORKDIR /src
+
+# Copy project files for restore (layer caching optimization)
+COPY Directory.Build.props Directory.Packages.props nuget.config ./
+COPY src/MinGo.Identity.Configuration/MinGo.Identity.Configuration.csproj src/MinGo.Identity.Configuration/
+COPY src/MinGo.IdServer/MinGo.IdServer.csproj src/MinGo.IdServer/
+
+# Restore with cached packages
+RUN dotnet restore src/MinGo.IdServer/MinGo.IdServer.csproj
+
+# Copy source and publish
+COPY . .
+RUN dotnet publish src/MinGo.IdServer/MinGo.IdServer.csproj \
+    -c Release \
+    -o /app/publish \
+    --no-restore
+
+# Stage 2: Runtime
+FROM mcr.microsoft.com/dotnet/aspnet:10.0-alpine AS runtime
+WORKDIR /app
+
+# Create non-root user
+RUN addgroup -S mingo && adduser -S mingo -G mingo
+USER mingo
+
+# Copy published artifacts
+COPY --from=build --chown=mingo:mingo /app/publish .
+
+# Environment
+ENV ASPNETCORE_URLS=http://+:5001
+ENV ASPNETCORE_ENVIRONMENT=Production
+
+# Health check
+HEALTHCHECK --interval=30s --timeout=5s --retries=3 \
+    CMD wget --no-verbose --tries=1 --spider http://localhost:5001/.well-known/openid-configuration || exit 1
+
+EXPOSE 5001
+
+ENTRYPOINT ["dotnet", "MinGo.IdServer.dll"]
