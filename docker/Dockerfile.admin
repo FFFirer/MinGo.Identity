@@ -1,0 +1,46 @@
+# syntax=docker/dockerfile:1
+# =============================================================================
+# MinGo Identity - Admin
+# Multi-stage Docker build for the SimpleIdServer Admin Blazor dashboard
+# =============================================================================
+
+# Stage 1: Build
+FROM mcr.microsoft.com/dotnet/sdk:10.0 AS build
+WORKDIR /src
+
+# Copy project files for restore (layer caching optimization)
+COPY Directory.Build.props Directory.Packages.props nuget.config ./
+COPY src/MinGo.IdServer.Admin/MinGo.IdServer.Admin.csproj src/MinGo.IdServer.Admin/
+
+# Restore with cached packages
+RUN dotnet restore src/MinGo.IdServer.Admin/MinGo.IdServer.Admin.csproj
+
+# Copy source and publish
+COPY . .
+RUN dotnet publish src/MinGo.IdServer.Admin/MinGo.IdServer.Admin.csproj \
+    -c Release \
+    -o /app/publish \
+    --no-restore
+
+# Stage 2: Runtime
+FROM mcr.microsoft.com/dotnet/aspnet:10.0-alpine AS runtime
+WORKDIR /app
+
+# Create non-root user
+RUN addgroup -S mingo && adduser -S mingo -G mingo
+USER mingo
+
+# Copy published artifacts
+COPY --from=build --chown=mingo:mingo /app/publish .
+
+# Environment
+ENV ASPNETCORE_URLS=http://+:5002
+ENV ASPNETCORE_ENVIRONMENT=Production
+
+# Health check
+HEALTHCHECK --interval=30s --timeout=5s --retries=3 \
+    CMD wget --no-verbose --tries=1 --spider http://localhost:5002/master/clients || exit 1
+
+EXPOSE 5002
+
+ENTRYPOINT ["dotnet", "MinGo.IdServer.Admin.dll"]

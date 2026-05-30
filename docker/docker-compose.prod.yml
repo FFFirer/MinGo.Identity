@@ -1,0 +1,129 @@
+# =============================================================================
+# MinGo.Identity - Production Deployment
+# =============================================================================
+# Usage:
+#   # Full stack (PostgreSQL + IdServer + Admin)
+#   docker compose -f docker/docker-compose.prod.yml up -d
+#
+#   # Run migration only (one-shot, before starting services)
+#   docker compose -f docker/docker-compose.prod.yml --profile migrate run --rm migrate
+#
+#   # Start services after migration
+#   docker compose -f docker/docker-compose.prod.yml up -d idserver admin
+# =============================================================================
+
+services:
+  # ===========================================================================
+  # PostgreSQL Database
+  # ===========================================================================
+  postgres:
+    image: postgres:16-alpine
+    container_name: mingo-postgres
+    environment:
+      POSTGRES_USER: ${PG_USER:-postgres}
+      POSTGRES_PASSWORD: ${PG_PASSWORD:-postgres}
+      POSTGRES_DB: ${PG_DATABASE:-mingo_identity}
+    ports:
+      - "${PG_PORT:-5432}:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${PG_USER:-postgres}"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+    networks:
+      - mingo-network
+
+  # ===========================================================================
+  # Database Migration (one-shot, profile: migrate)
+  # ===========================================================================
+  migrate:
+    profiles: ["migrate"]
+    image: ${REGISTRY:-}mingo-identity-migrator:${IMAGE_TAG:-latest}
+    container_name: mingo-migrate
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile.migrator
+    environment:
+      StorageConfiguration__Type: ${STORAGE_TYPE:-POSTGRE}
+      StorageConfiguration__ConnectionString: ${CONNECTION_STRING:-Host=postgres;Port=5432;Database=mingo_identity;Username=postgres;Password=postgres}
+      DOTNET_ENVIRONMENT: Production
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - mingo-network
+    restart: no
+
+  # ===========================================================================
+  # IdServer - OIDC/OAuth2 Identity Provider
+  # ===========================================================================
+  idserver:
+    image: ${REGISTRY:-}mingo-identity-idserver:${IMAGE_TAG:-latest}
+    container_name: mingo-idserver
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile.idserver
+    environment:
+      ASPNETCORE_URLS: http://+:5001
+      ASPNETCORE_ENVIRONMENT: ${ASPNETCORE_ENVIRONMENT:-Production}
+      StorageConfiguration__Type: ${STORAGE_TYPE:-POSTGRE}
+      StorageConfiguration__ConnectionString: ${CONNECTION_STRING:-Host=postgres;Port=5432;Database=mingo_identity;Username=postgres;Password=postgres}
+      Authority: ${AUTHORITY:-http://localhost:5001}
+      AdminUiUrl: ${ADMIN_UI_URL:-http://localhost:5002}
+      IsRealmEnabled: ${IS_REALM_ENABLED:-true}
+      IsForwardedEnabled: ${IS_FORWARDED_ENABLED:-false}
+    ports:
+      - "${IDSERVER_PORT:-5001}:5001"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:5001/.well-known/openid-configuration"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+    restart: unless-stopped
+    networks:
+      - mingo-network
+
+  # ===========================================================================
+  # Admin - Blazor Management Dashboard
+  # ===========================================================================
+  admin:
+    image: ${REGISTRY:-}mingo-identity-admin:${IMAGE_TAG:-latest}
+    container_name: mingo-admin
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile.admin
+    environment:
+      ASPNETCORE_URLS: http://+:5002
+      ASPNETCORE_ENVIRONMENT: ${ASPNETCORE_ENVIRONMENT:-Production}
+      IdserverBaseUrl: ${IDSERVER_BASE_URL:-http://idserver:5001}
+      ClientId: ${ADMIN_CLIENT_ID:-SIDS-manager}
+      ClientSecret: ${ADMIN_CLIENT_SECRET:-password}
+      IsRealmEnabled: ${IS_REALM_ENABLED:-true}
+      IgnoreCertificateError: ${IGNORE_CERT_ERROR:-true}
+    ports:
+      - "${ADMIN_PORT:-5002}:5002"
+    depends_on:
+      idserver:
+        condition: service_started
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:5002/master/clients"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+    restart: unless-stopped
+    networks:
+      - mingo-network
+
+networks:
+  mingo-network:
+    driver: bridge
+
+volumes:
+  postgres_data:
+    driver: local
