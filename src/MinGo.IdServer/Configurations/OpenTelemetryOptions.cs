@@ -24,17 +24,17 @@ public class OpenTelemetryOptions
     public string MetricsEndpoint
     { 
         get; set;
-    }
+    } = null!;
 
     public string TracesEndpoint
     {
         get; set;
-    }
+    } = null!;
 
     public string Headers
     {
         get; set;
-    }
+    } = null!;
 
     public OtlpExportProtocol Protocol
     {

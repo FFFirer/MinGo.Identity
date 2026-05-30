@@ -6,15 +6,15 @@ namespace MinGo.IdServer;
 
 public class IdentityServerConfiguration
 {
-    public string AuthCookieNamePrefix 
-    { 
-        get; set; 
-    }
+    public string AuthCookieNamePrefix
+    {
+        get; set;
+    } = null!;
 
-    public string SessionCookieNamePrefix 
-    { 
-        get; set; 
-    }
+    public string SessionCookieNamePrefix
+    {
+        get; set;
+    } = null!;
     
     public bool IsRealmEnabled 
     { 
@@ -26,10 +26,10 @@ public class IdentityServerConfiguration
         get; set; 
     }
     
-    public string Authority 
-    { 
-        get; set; 
-    }
+    public string Authority
+    {
+        get; set;
+    } = null!;
     
     public bool IsForwardedEnabled 
     { 
@@ -49,5 +49,5 @@ public class IdentityServerConfiguration
     public string AdminUiUrl
     {
         get; set;
-    }
+    } = null!;
 }

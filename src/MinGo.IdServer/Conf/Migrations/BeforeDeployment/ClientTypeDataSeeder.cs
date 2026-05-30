@@ -92,7 +92,7 @@ public class ClientTypeDataSeeder : BaseBeforeDeploymentDataSeeder
 
     private class OldClient
     {
-        public string Id { get; set; }
+        public string Id { get; set; } = null!;
         public string? ClientType { get; set; }
     }
 }

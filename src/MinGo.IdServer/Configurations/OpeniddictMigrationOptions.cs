@@ -14,5 +14,5 @@ public class OpeniddictMigrationOptions
     public string ConnectionString
     {
         get; set;
-    }
+    } = null!;
 }

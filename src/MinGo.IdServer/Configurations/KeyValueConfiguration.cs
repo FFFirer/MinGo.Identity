@@ -13,7 +13,7 @@ public class KeyValueConfiguration
     public string ConnectionString
     {
         get; set;
-    }
+    } = null!;
 }
 
 public enum KeyValueTypes

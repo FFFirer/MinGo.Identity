@@ -14,5 +14,5 @@ public class DuendeMigrationOptions
     public string ConnectionString
     {
         get; set;
-    }
+    } = null!;
 }
