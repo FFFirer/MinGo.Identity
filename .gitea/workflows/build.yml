@@ -29,7 +29,7 @@ env:
   DOTNET_VERSION: "10.0.x"
   REGISTRY: ${{ vars.REGISTRY_URL }}
   REGISTRY_USER: ${{ vars.REGISTRY_USERNAME }}
-  IMAGE_NAME_PREFIX: mingo-identity-
+  IMAGE_NAME_PREFIX: identity-
 
 jobs:
   # ===========================================================================
@@ -84,17 +84,12 @@ jobs:
         shell: bash
         run: |
           # Always include commit SHA
-          TAGS="${{ env.REGISTRY }}/${{ env.REGISTRY_USER }}/MinGo.Identity/${{ env.IMAGE_NAME_PREFIX }}${{ matrix.service }}:${{ gitea.sha }}"
-
-          # Include branch name for main/master
-          if [[ "${{ gitea.ref_type }}" == "branch" ]]; then
-            TAGS="$TAGS,${{ env.REGISTRY }}/${{ env.IMAGE_NAME_PREFIX }}${{ matrix.service }}:${{ gitea.ref_name }}"
-          fi
+          TAGS="${{ env.REGISTRY }}/mingo/${{ env.IMAGE_NAME_PREFIX }}${{ matrix.service }}:${{ gitea.sha }}"
 
           # Include semver tag for version tags
           if [[ "${{ gitea.ref_type }}" == "tag" ]]; then
-            TAGS="$TAGS,${{ env.REGISTRY }}/${{ env.IMAGE_NAME_PREFIX }}${{ matrix.service }}:${{ gitea.ref_name }}"
-            TAGS="$TAGS,${{ env.REGISTRY }}/${{ env.IMAGE_NAME_PREFIX }}${{ matrix.service }}:latest"
+            TAGS="$TAGS,${{ env.REGISTRY }}/mingo/${{ env.IMAGE_NAME_PREFIX }}${{ matrix.service }}:${{ gitea.ref_name }}"
+            TAGS="$TAGS,${{ env.REGISTRY }}/mingo/${{ env.IMAGE_NAME_PREFIX }}${{ matrix.service }}:latest"
           fi
 
           echo "tags=$TAGS" >> $GITHUB_OUTPUT
