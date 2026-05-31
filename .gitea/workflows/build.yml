@@ -88,13 +88,13 @@ jobs:
 
           # Include branch name for main/master
           if [[ "${{ gitea.ref_type }}" == "branch" ]]; then
-            TAGS="$TAGS,${{ env.REGISTRY }}/${{ env.REGISTRY_USER }}/MinGo.Identity/${{ env.IMAGE_NAME_PREFIX }}${{ matrix.service }}:${{ gitea.ref_name }}"
+            TAGS="$TAGS,${{ env.REGISTRY }}/${{ env.IMAGE_NAME_PREFIX }}${{ matrix.service }}:${{ gitea.ref_name }}"
           fi
 
           # Include semver tag for version tags
           if [[ "${{ gitea.ref_type }}" == "tag" ]]; then
-            TAGS="$TAGS,${{ env.REGISTRY }}/${{ env.REGISTRY_USER }}/MinGo.Identity/${{ env.IMAGE_NAME_PREFIX }}${{ matrix.service }}:${{ gitea.ref_name }}"
-            TAGS="$TAGS,${{ env.REGISTRY }}/${{ env.REGISTRY_USER }}/MinGo.Identity/${{ env.IMAGE_NAME_PREFIX }}${{ matrix.service }}:latest"
+            TAGS="$TAGS,${{ env.REGISTRY }}/${{ env.IMAGE_NAME_PREFIX }}${{ matrix.service }}:${{ gitea.ref_name }}"
+            TAGS="$TAGS,${{ env.REGISTRY }}/${{ env.IMAGE_NAME_PREFIX }}${{ matrix.service }}:latest"
           fi
 
           echo "tags=$TAGS" >> $GITHUB_OUTPUT
