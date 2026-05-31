@@ -1,4 +1,3 @@
-# syntax=docker/dockerfile:1
 # =============================================================================
 # MinGo Identity - IdServer
 # Multi-stage Docker build for the SimpleIdServer OIDC/OAuth2 identity provider

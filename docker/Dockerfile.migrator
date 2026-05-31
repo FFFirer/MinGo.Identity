@@ -1,4 +1,3 @@
-# syntax=docker/dockerfile:1
 # =============================================================================
 # MinGo Identity - Migrator
 # Multi-stage Docker build for the database migration console tool
