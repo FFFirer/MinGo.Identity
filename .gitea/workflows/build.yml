@@ -24,6 +24,7 @@ on:
     tags: ["v*"]
   pull_request:
     branches: [main, master]
+  workflow_dispatch:
 
 env:
   DOTNET_VERSION: "10.0.x"
@@ -86,6 +87,11 @@ jobs:
           # Always include commit SHA
           TAGS="${{ env.REGISTRY }}/mingo/${{ env.IMAGE_NAME_PREFIX }}${{ matrix.service }}:${{ gitea.sha }}"
 
+          # Include dev tag for manual workflow dispatch
+          if [[ "${{ gitea.event_name }}" == "workflow_dispatch" ]]; then
+            TAGS="$TAGS,${{ env.REGISTRY }}/mingo/${{ env.IMAGE_NAME_PREFIX }}${{ matrix.service }}:dev"
+          fi
+
           # Include semver tag for version tags
           if [[ "${{ gitea.ref_type }}" == "tag" ]]; then
             TAGS="$TAGS,${{ env.REGISTRY }}/mingo/${{ env.IMAGE_NAME_PREFIX }}${{ matrix.service }}:${{ gitea.ref_name }}"
@@ -109,7 +115,7 @@ jobs:
         with:
           context: .
           file: docker/Dockerfile.${{ matrix.service }}
-          push: ${{ gitea.ref_type == 'tag' || gitea.ref_name == 'main' || gitea.ref_name == 'master' }}
+          push: ${{ gitea.ref_type == 'tag' || gitea.ref_name == 'main' || gitea.ref_name == 'master' || gitea.event_name == 'workflow_dispatch' }}
           tags: ${{ steps.tags.outputs.tags }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
