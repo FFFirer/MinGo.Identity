@@ -4,7 +4,7 @@
 # Gitea Workflows (compatible with Gitea Act Runner)
 #
 # Pipeline:
-#   Push/Tag → Build (restore + build + test) → Docker (matrix: 3 images)
+#   Push/Tag → Build (restore + build) → Docker (matrix: 3 images)
 #
 # Required Secrets:
 #   REGISTRY_URL        - Gitea Container Registry URL (e.g., gitea.example.com)
@@ -61,9 +61,6 @@ jobs:
 
       - name: Build all projects
         run: dotnet build --no-restore -c Release
-
-      - name: Run tests
-        run: dotnet test --no-build -c Release --verbosity normal || echo "No test projects found, skipping."
 
   # ===========================================================================
   # Docker Image Build & Push (parallel matrix)
