@@ -10,6 +10,10 @@
 	</PropertyGroup>
 
 	<ItemGroup>
+		<InternalsVisibleTo Include="MinGo.Identity.Migrator.IntegrationTests" />
+	</ItemGroup>
+
+	<ItemGroup>
 		<ProjectReference Include="..\MinGo.Identity.Configuration\MinGo.Identity.Configuration.csproj" />
 		<ProjectReference Include="..\MinGo.Identity.Migrations\MinGo.Identity.Migrations.csproj" />
 	</ItemGroup>
@@ -22,6 +26,10 @@
 		<PackageReference Include="Microsoft.Extensions.Configuration.Json" />
 		<PackageReference Include="Microsoft.Extensions.Configuration.EnvironmentVariables" />
 		<PackageReference Include="System.CommandLine" />
+		<PackageReference Include="Microsoft.EntityFrameworkCore.Design">
+			<PrivateAssets>all</PrivateAssets>
+			<IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+		</PackageReference>
 	</ItemGroup>
 
 	<ItemGroup>
