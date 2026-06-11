@@ -4,7 +4,7 @@
 # Gitea Workflows (compatible with Gitea Act Runner)
 #
 # Pipeline:
-#   Push/Tag → Build (restore + build) → Docker (matrix: 3 images)
+#   Release/Tag → Build (restore + build) → Docker (matrix: 3 images)
 #
 # Required Secrets:
 #   REGISTRY_URL        - Gitea Container Registry URL (e.g., gitea.example.com)
@@ -16,11 +16,13 @@
 # =============================================================================
 
 name: CI/CD Pipeline
-run-name: ${{ gitea.actor }} pushed to ${{ gitea.ref_name }}
+run-name: ${{ gitea.actor }} triggered ${{ gitea.ref_name }}
 
 on:
   pull_request:
     branches: [main, master]
+  release:
+    types: [published]
   workflow_dispatch:
 
 env:
@@ -109,7 +111,7 @@ jobs:
         with:
           context: .
           file: docker/Dockerfile.${{ matrix.service }}
-          push: ${{ gitea.ref_type == 'tag' || gitea.ref_name == 'main' || gitea.ref_name == 'master' || gitea.event_name == 'workflow_dispatch' }}
+          push: ${{ gitea.ref_type == 'tag' || gitea.ref_name == 'main' || gitea.ref_name == 'master' || gitea.event_name == 'workflow_dispatch' || gitea.event_name == 'release' }}
           tags: ${{ steps.tags.outputs.tags }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
