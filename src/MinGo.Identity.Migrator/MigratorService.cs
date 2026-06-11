@@ -1,13 +1,24 @@
+using DataSeeder;
+using FormBuilder;
+using FormBuilder.EF;
+using FormBuilder.EF.Stores;
+using FormBuilder.Repositories;
+using FormBuilder.Stores;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
 using MinGo.Identity.Configuration;
 using MinGo.Identity.Migrations;
 using SimpleIdServer.IdServer.Store.EF;
+using SimpleIdServer.IdServer.Migrations;
+using SimpleIdServer.IdServer.Migrations.DataSeeder;
 
 namespace MinGo.Identity.Migrator;
 
 /// <summary>
 /// 统一迁移服务
-/// 按顺序执行：SIS 官方迁移 → 自定义扩展迁移 → 种子数据
+/// 通过 SimpleIdServer 官方的 SeedData() pipeline 统一管理：
+///   - 数据库迁移（SIS + FormBuilder + 自定义扩展）
+///   - 种子数据（SIS 14 个官方 seeder + 自定义扩展 seeder）
 /// </summary>
 public class MigratorService
 {
@@ -24,29 +35,12 @@ public class MigratorService
         Console.WriteLine($"Storage: {_storageConfig.Type}");
         Console.WriteLine();
 
-        // Step 1: SimpleIdServer 官方迁移
-        Console.WriteLine("[1/3] Applying SimpleIdServer migrations...");
-        using (var sisContext = CreateSisDbContext())
-        {
-            await sisContext.Database.MigrateAsync();
-        }
-        Console.WriteLine("  ✓ SIS migrations applied");
-
-        // Step 2: 自定义扩展迁移
-        Console.WriteLine("[2/3] Applying custom extension migrations...");
-        using (var extContext = CreateExtDbContext())
-        {
-            await extContext.Database.MigrateAsync();
-        }
-        Console.WriteLine("  ✓ Custom migrations applied");
-
-        // Step 3: Seed 数据
-        Console.WriteLine("[3/3] Seeding data...");
+        Console.WriteLine("[1/1] Running SeedData pipeline (migrations + seeders)...");
         await SeedDataAsync();
-        Console.WriteLine("  ✓ Seed data applied");
+        Console.WriteLine("  ✓ All migrations and seed data applied");
 
         Console.WriteLine();
-        Console.WriteLine("All migrations completed successfully.");
+        Console.WriteLine("All operations completed successfully.");
     }
 
     public async Task GenerateScriptAsync(FileInfo? output)
@@ -69,6 +63,103 @@ public class MigratorService
         }
     }
 
+    /// <summary>
+    /// 构建 DI 容器，注册所有 IDataSeeder 和 IDbMigrateService，
+    /// 然后调用 SimpleIdServer 官方的 SeedData() 扩展方法执行全部 pipeline。
+    /// </summary>
+    private async Task SeedDataAsync()
+    {
+        var services = new ServiceCollection();
+
+        EnableMigration(services);
+
+        // ════════════════════════════════════════════════════════════════
+        // SIS EF Store: StoreDbContext + EF 仓库 + IDbMigrateService x2
+        //   (IdServerDbMigrateService + FormbuilderDbMigrateService)
+        // ════════════════════════════════════════════════════════════════
+        services.AddEfStore(o =>
+            ConfigurationHelper.BuildDbContextOptions(
+                o, _storageConfig, ConfigurationHelper.GetSisMigrationsAssembly(_storageConfig.Type)));
+
+        // ════════════════════════════════════════════════════════════════
+        // FormBuilder EF Store: IFormStore + FormBuilderDbContext
+        //   InitConsoleAuthDataseeder 等 seeder 依赖 IFormStore
+        // ════════════════════════════════════════════════════════════════
+        services.AddTransient<IFormStore, FormStore>();
+        services.AddTransient<IWorkflowStore, WorkflowStore>();
+        services.AddTransient<ITemplateStore, TemplateStore>();
+        services.AddDbContext<FormBuilderDbContext>(o =>
+            ConfigurationHelper.BuildDbContextOptions(
+                o, _storageConfig, ConfigurationHelper.GetFormBuilderMigrationsAssembly(_storageConfig.Type)));
+
+        // ════════════════════════════════════════════════════════════════
+        // 自定义扩展 EF Store
+        // ════════════════════════════════════════════════════════════════
+        services.AddDbContext<ExtStoreDbContext>(o =>
+        {
+            ConfigurationHelper.BuildDbContextOptions(
+                o, _storageConfig, "MinGo.Identity.Migrations");
+            // 模型快照基于 Npgsql 生成，SQLite 等 provider 类型映射不同会导致 PendingModelChangesWarning
+            o.ConfigureWarnings(w => w.Ignore(Microsoft.EntityFrameworkCore.Diagnostics.RelationalEventId.PendingModelChangesWarning));
+        });
+
+        // ════════════════════════════════════════════════════════════════
+        // 数据迁移服务
+        // ════════════════════════════════════════════════════════════════
+        services.AddDataseeder();
+
+        // ════════════════════════════════════════════════════════════════
+        // SimpleIdServer 官方 14 个 IDataSeeder
+        // ════════════════════════════════════════════════════════════════
+        RegisterSisDataSeeders(services);
+
+        // ════════════════════════════════════════════════════════════════
+        // 自定义扩展
+        // ════════════════════════════════════════════════════════════════
+        services.AddTransient<IDbMigrateService, ExtStoreDbMigrateService>();
+        services.AddTransient<IDataSeeder, InitUserProfileDataSeeder>();
+
+        // ════════════════════════════════════════════════════════════════
+        // SIS EnableMigration — 注册 IMigrationServiceFactory、
+        // AddMigrationsScopeDataSeeder 等（等价于 IdServer 的 .EnableMigration()）
+        // ════════════════════════════════════════════════════════════════
+        EnableMigration(services);
+
+        var sp = services.BuildServiceProvider();
+        sp.SeedData();
+    }
+
+    private void EnableMigration(ServiceCollection services)
+    {
+        services.AddTransient<IMigrationServiceFactory, MigrationServiceFactory>();
+        services.AddTransient<IDataSeeder, AddMigrationsScopeDataSeeder>();
+        services.AddTransient<ILaunchMigrationService, LaunchMigrationService>();
+        services.AddTransient<ILaunchAllMigrationsService, LaunchAllMigrationsService>();
+    }
+
+
+    /// <summary>
+    /// 注册 SimpleIdServer 官方 ConfigureDataSeeders 中定义的 14 个 IDataSeeder。
+    /// AddMigrationsScopeDataSeeder 由 <see cref="EnableMigration"/> 单独注册。
+    /// </summary>
+    private static void RegisterSisDataSeeders(IServiceCollection services)
+    {
+        services.AddTransient<IDataSeeder, SimpleIdServer.IdServer.DataSeeder.InitRealmDataSeeder>();
+        services.AddTransient<IDataSeeder, SimpleIdServer.IdServer.DataSeeder.InitSerializedFileKeyDataSeeder>();
+        services.AddTransient<IDataSeeder, SimpleIdServer.IdServer.DataSeeder.InitCertificateAuthoritiesDataseeder>();
+        services.AddTransient<IDataSeeder, SimpleIdServer.IdServer.DataSeeder.InitLanguageDataSeeder>();
+        services.AddTransient<IDataSeeder, SimpleIdServer.IdServer.DataSeeder.InitScopeDataSeeder>();
+        services.AddTransient<IDataSeeder, SimpleIdServer.IdServer.DataSeeder.InitConsoleAuthDataseeder>();
+        services.AddTransient<IDataSeeder, SimpleIdServer.IdServer.DataSeeder.InitUserLockingConfigurationDefDataseeder>();
+        services.AddTransient<IDataSeeder, SimpleIdServer.IdServer.DataSeeder.InitConsoleConfigurationDefDataseeder>();
+        services.AddTransient<IDataSeeder, SimpleIdServer.IdServer.DataSeeder.UpdateAuthorizationCodeLifetimeDataSeeder>();
+        services.AddTransient<IDataSeeder, SimpleIdServer.IdServer.DataSeeder.UpdateDeviceCodeLitetimeDataSeeder>();
+        services.AddTransient<IDataSeeder, SimpleIdServer.IdServer.DataSeeder.UpdateParLitetimeDataSeeder>();
+        services.AddTransient<IDataSeeder, SimpleIdServer.IdServer.DataSeeder.UpdateOtherLifetimeDataSeeder>();
+        services.AddTransient<IDataSeeder, SimpleIdServer.IdServer.DataSeeder.UpdateClientSecretDataSeeder>();
+        services.AddTransient<IDataSeeder, SimpleIdServer.IdServer.DataSeeder.UpdateTargetsConsoleWorkflowsDataseeder>();
+    }
+
     private string GenerateSisScript()
     {
         using var ctx = CreateSisDbContext();
@@ -85,7 +176,7 @@ public class MigratorService
     {
         var builder = new DbContextOptionsBuilder<StoreDbContext>();
         ConfigurationHelper.BuildDbContextOptions(
-            builder, _storageConfig, "SimpleIdServer.IdServer.PostgreMigrations");
+            builder, _storageConfig, ConfigurationHelper.GetSisMigrationsAssembly(_storageConfig.Type));
         return new StoreDbContext(builder.Options);
     }
 
@@ -95,12 +186,5 @@ public class MigratorService
         ConfigurationHelper.BuildDbContextOptions(
             builder, _storageConfig, "MinGo.Identity.Migrations");
         return new ExtStoreDbContext(builder.Options);
-    }
-
-    private async Task SeedDataAsync()
-    {
-        // Seed 数据执行逻辑
-        // 目前 IDataSeeder 注册在 IdServer 中，后续可迁移至此处
-        await Task.CompletedTask;
     }
 }

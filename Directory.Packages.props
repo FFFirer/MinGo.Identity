@@ -41,6 +41,7 @@
 
     <!-- Federation / 迁移 -->
     <PackageVersion Include="SimpleIdServer.IdServer.Federation" Version="7.0.0" />
+    <PackageVersion Include="SimpleIdServer.IdServer.Migrations" Version="7.0.0" />
     <PackageVersion Include="SimpleIdServer.IdServer.Migrations.Duende" Version="7.0.0" />
     <PackageVersion Include="SimpleIdServer.IdServer.Migrations.Openiddict" Version="7.0.0" />
 

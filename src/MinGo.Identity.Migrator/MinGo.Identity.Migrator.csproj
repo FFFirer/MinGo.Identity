@@ -14,13 +14,15 @@
 	</ItemGroup>
 
 	<ItemGroup>
-		<ProjectReference Include="..\MinGo.Identity.Configuration\MinGo.Identity.Configuration.csproj" />
+		<ProjectReference
+			Include="..\MinGo.Identity.Configuration\MinGo.Identity.Configuration.csproj" />
 		<ProjectReference Include="..\MinGo.Identity.Migrations\MinGo.Identity.Migrations.csproj" />
 	</ItemGroup>
 
 	<ItemGroup>
+		<PackageReference Include="SimpleIdServer.IdServer" />
+		<PackageReference Include="SimpleIdServer.IdServer.Migrations" />
 		<PackageReference Include="SimpleIdServer.IdServer.Store.EF" />
-		<PackageReference Include="SimpleIdServer.IdServer.PostgreMigrations" />
 		<PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" />
 		<PackageReference Include="Microsoft.EntityFrameworkCore.Relational" />
 		<PackageReference Include="Microsoft.Extensions.Configuration.Json" />
@@ -30,6 +32,22 @@
 			<PrivateAssets>all</PrivateAssets>
 			<IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
 		</PackageReference>
+	</ItemGroup>
+
+	<!-- ════════════════════════════════════════════════════════════════ -->
+	<!-- 数据库迁移程序集：全部后端，运行时由 StorageConfiguration 切换  -->
+	<!-- ════════════════════════════════════════════════════════════════ -->
+	<ItemGroup>
+		<!-- SimpleIdServer IdServer -->
+		<PackageReference Include="SimpleIdServer.IdServer.PostgreMigrations" />
+		<PackageReference Include="SimpleIdServer.IdServer.SqlServerMigrations" />
+		<PackageReference Include="SimpleIdServer.IdServer.MySQLMigrations" />
+		<PackageReference Include="SimpleIdServer.IdServer.SqliteMigrations" />
+		<!-- SidFormBuilder -->
+		<PackageReference Include="SidFormBuilder.PostgreMigrations" />
+		<PackageReference Include="SidFormBuilder.SqlServerMigrations" />
+		<PackageReference Include="SidFormBuilder.MySQLMigrations" />
+		<PackageReference Include="SidFormBuilder.SqliteMigrations" />
 	</ItemGroup>
 
 	<ItemGroup>

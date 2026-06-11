@@ -7,6 +7,7 @@
     <Project Path="src/MinGo.IdServer/MinGo.IdServer.csproj" />
   </Folder>
   <Folder Name="/tests/">
+    <Project Path="tests/MinGo.Identity.UnitTests/MinGo.Identity.UnitTests.csproj" />
     <Project Path="tests/MinGo.Identity.Migrator.IntegrationTests/MinGo.Identity.Migrator.IntegrationTests.csproj" />
   </Folder>
 </Solution>

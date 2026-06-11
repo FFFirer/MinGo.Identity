@@ -6,6 +6,32 @@ namespace MinGo.Identity.Configuration;
 public static class ConfigurationHelper
 {
     /// <summary>
+    /// 根据存储类型返回 SimpleIdServer IdServer 对应的迁移程序集名称
+    /// </summary>
+    public static string? GetSisMigrationsAssembly(StorageTypes type) => type switch
+    {
+        StorageTypes.SQLSERVER => "SimpleIdServer.IdServer.SqlServerMigrations",
+        StorageTypes.POSTGRE => "SimpleIdServer.IdServer.PostgreMigrations",
+        StorageTypes.MYSQL => "SimpleIdServer.IdServer.MySQLMigrations",
+        StorageTypes.SQLITE => "SimpleIdServer.IdServer.SqliteMigrations",
+        StorageTypes.INMEMORY => null,
+        _ => throw new ArgumentOutOfRangeException(nameof(type), type, null)
+    };
+
+    /// <summary>
+    /// 根据存储类型返回 FormBuilder 对应的迁移程序集名称
+    /// </summary>
+    public static string? GetFormBuilderMigrationsAssembly(StorageTypes type) => type switch
+    {
+        StorageTypes.SQLSERVER => "SidFormBuilder.SqlServerMigrations",
+        StorageTypes.POSTGRE => "SidFormBuilder.PostgreMigrations",
+        StorageTypes.MYSQL => "SidFormBuilder.MySQLMigrations",
+        StorageTypes.SQLITE => "SidFormBuilder.SqliteMigrations",
+        StorageTypes.INMEMORY => null,
+        _ => throw new ArgumentOutOfRangeException(nameof(type), type, null)
+    };
+
+    /// <summary>
     /// 从 appsettings.json 的 StorageConfiguration 节读取存储配置
     /// </summary>
     public static StorageConfiguration LoadStorageConfiguration(IConfiguration configuration)
@@ -20,7 +46,7 @@ public static class ConfigurationHelper
     public static DbContextOptionsBuilder BuildDbContextOptions(
         DbContextOptionsBuilder builder,
         StorageConfiguration config,
-        string migrationsAssembly)
+        string? migrationsAssembly)
     {
         switch (config.Type)
         {

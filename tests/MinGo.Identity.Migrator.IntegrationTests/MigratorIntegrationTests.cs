@@ -38,7 +38,7 @@ public class MigratorIntegrationTests : IClassFixture<DbFixture>
         }
 
         Assert.Equal(0, exitCode);
-        Assert.Contains("All migrations completed successfully", stdOut);
+        Assert.Contains("All operations completed successfully", stdOut);
     }
 
     [Fact]
@@ -167,10 +167,16 @@ public class MigratorIntegrationTests : IClassFixture<DbFixture>
     public async Task Cli_Migrate_ShouldSucceed()
     {
         var migratorProject = FindMigratorProjectPath();
+        var envVars = new Dictionary<string, string>
+        {
+            ["StorageConfiguration__ConnectionString"] = _fixture.ConnectionString,
+            ["StorageConfiguration__Type"] = "POSTGRE"
+        };
         var (exitCode, stdOut, stdErr) = await RunProcessAsync(
             "dotnet",
             $"run --project \"{migratorProject}\" -- migrate",
-            Path.GetDirectoryName(migratorProject)!
+            Path.GetDirectoryName(migratorProject)!,
+            envVars
         );
 
         _output.WriteLine("=== CLI stdout ===");
@@ -182,7 +188,7 @@ public class MigratorIntegrationTests : IClassFixture<DbFixture>
         }
 
         Assert.Equal(0, exitCode);
-        Assert.Contains("All migrations completed successfully", stdOut);
+        Assert.Contains("All operations completed successfully", stdOut);
     }
 
     // ============================================================
@@ -254,25 +260,30 @@ public class MigratorIntegrationTests : IClassFixture<DbFixture>
     }
 
     private static async Task<(int, string, string)> RunProcessAsync(
-        string fileName, string arguments, string workingDir)
+        string fileName, string arguments, string workingDir,
+        Dictionary<string, string>? environmentVariables = null)
     {
         var stdOut = new StringWriter();
         var stdErr = new StringWriter();
 
-        using var process = new System.Diagnostics.Process
+        var startInfo = new System.Diagnostics.ProcessStartInfo
         {
-            StartInfo = new System.Diagnostics.ProcessStartInfo
-            {
-                FileName = fileName,
-                Arguments = arguments,
-                WorkingDirectory = workingDir,
-                RedirectStandardOutput = true,
-                RedirectStandardError = true,
-                UseShellExecute = false,
-                CreateNoWindow = true,
-            }
+            FileName = fileName,
+            Arguments = arguments,
+            WorkingDirectory = workingDir,
+            RedirectStandardOutput = true,
+            RedirectStandardError = true,
+            UseShellExecute = false,
+            CreateNoWindow = true,
         };
 
+        if (environmentVariables != null)
+        {
+            foreach (var kv in environmentVariables)
+                startInfo.EnvironmentVariables[kv.Key] = kv.Value;
+        }
+
+        using var process = new System.Diagnostics.Process { StartInfo = startInfo };
         process.Start();
         var outTask = process.StandardOutput.ReadToEndAsync();
         var errTask = process.StandardError.ReadToEndAsync();

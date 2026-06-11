@@ -306,40 +306,10 @@ public class SidServerSetup
     {
         var section = builder.Configuration.GetSection(nameof(StorageConfiguration));
         var conf = section.Get<StorageConfiguration>() ?? throw new InvalidOperationException($"Configuration section '{nameof(StorageConfiguration)}' is missing");
-        switch (conf.Type)
+        ConfigurationHelper.BuildDbContextOptions(b, conf, ConfigurationHelper.GetSisMigrationsAssembly(conf.Type));
+        if (conf.Type == StorageTypes.SQLITE)
         {
-            case StorageTypes.SQLSERVER:
-                b.UseSqlServer(conf.ConnectionString, o =>
-                {
-                    o.MigrationsAssembly("SimpleIdServer.IdServer.SqlServerMigrations");
-                    o.UseQuerySplittingBehavior(QuerySplittingBehavior.SplitQuery);
-                });
-                break;
-            case StorageTypes.POSTGRE:
-                b.UseNpgsql(conf.ConnectionString, o =>
-                {
-                    o.MigrationsAssembly("SimpleIdServer.IdServer.PostgreMigrations");
-                    o.UseQuerySplittingBehavior(QuerySplittingBehavior.SplitQuery);
-                });
-                break;
-            case StorageTypes.MYSQL:
-                b.UseMySql(conf.ConnectionString, ServerVersion.AutoDetect(conf.ConnectionString), o =>
-                {
-                    o.MigrationsAssembly("SimpleIdServer.IdServer.MySQLMigrations");
-                    o.UseQuerySplittingBehavior(QuerySplittingBehavior.SplitQuery);
-                });
-                break;
-            case StorageTypes.INMEMORY:
-                b.UseInMemoryDatabase(conf.ConnectionString);
-                break;
-            case StorageTypes.SQLITE:
-                b.UseSqlite(conf.ConnectionString, o =>
-                {
-                    o.MigrationsAssembly("SimpleIdServer.IdServer.SqliteMigrations");
-                    o.UseQuerySplittingBehavior(QuerySplittingBehavior.SplitQuery);
-                });
-                b.ConfigureWarnings(x => x.Ignore(Microsoft.EntityFrameworkCore.Diagnostics.RelationalEventId.AmbientTransactionWarning));
-                break;
+            b.ConfigureWarnings(x => x.Ignore(Microsoft.EntityFrameworkCore.Diagnostics.RelationalEventId.AmbientTransactionWarning));
         }
     }
 
@@ -347,36 +317,10 @@ public class SidServerSetup
     {
         var section = builder.Configuration.GetSection(nameof(StorageConfiguration));
         var conf = section.Get<StorageConfiguration>() ?? throw new InvalidOperationException($"Configuration section '{nameof(StorageConfiguration)}' is missing");
-        switch (conf.Type)
+        ConfigurationHelper.BuildDbContextOptions(b, conf, ConfigurationHelper.GetFormBuilderMigrationsAssembly(conf.Type));
+        if (conf.Type == StorageTypes.SQLITE)
         {
-            case StorageTypes.SQLSERVER:
-                b.UseSqlServer(conf.ConnectionString, o =>
-                {
-                    o.MigrationsAssembly("SidFormBuilder.SqlServerMigrations");
-                });
-                break;
-            case StorageTypes.POSTGRE:
-                b.UseNpgsql(conf.ConnectionString, o =>
-                {
-                    o.MigrationsAssembly("SidFormBuilder.PostgreMigrations");
-                });
-                break;
-            case StorageTypes.MYSQL:
-                b.UseMySql(conf.ConnectionString, ServerVersion.AutoDetect(conf.ConnectionString), o =>
-                {
-                    o.MigrationsAssembly("SidFormBuilder.MySQLMigrations");
-                });
-                break;
-            case StorageTypes.INMEMORY:
-                b.UseInMemoryDatabase(conf.ConnectionString);
-                break;
-            case StorageTypes.SQLITE:
-                b.UseSqlite(conf.ConnectionString, o =>
-                {
-                    o.MigrationsAssembly("SidFormBuilder.SqliteMigrations");
-                });
-                b.ConfigureWarnings(x => x.Ignore(Microsoft.EntityFrameworkCore.Diagnostics.RelationalEventId.AmbientTransactionWarning));
-                break;
+            b.ConfigureWarnings(x => x.Ignore(Microsoft.EntityFrameworkCore.Diagnostics.RelationalEventId.AmbientTransactionWarning));
         }
     }
 
