@@ -19,9 +19,6 @@ name: CI/CD Pipeline
 run-name: ${{ gitea.actor }} pushed to ${{ gitea.ref_name }}
 
 on:
-  push:
-    branches: [main, master]
-    tags: ["v*"]
   pull_request:
     branches: [main, master]
   workflow_dispatch:
