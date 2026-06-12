@@ -26,7 +26,7 @@ FROM mcr.microsoft.com/dotnet/aspnet:10.0-alpine AS runtime
 WORKDIR /app
 
 # Install ICU globalization support (SimpleIdServer requires CultureInfo)
-RUN apk add --no-cache icu-data-full
+RUN apk add --no-cache icu-libs icu-data-full
 ENV DOTNET_SYSTEM_GLOBALIZATION_INVARIANT=0
 
 # Create non-root user
