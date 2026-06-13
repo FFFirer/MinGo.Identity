@@ -1,26 +1,15 @@
 # =============================================================================
-# MinGo.Identity - CI/CD Pipeline
+# MinGo.Identity - Release & Docker Build Workflow
 # =============================================================================
-# Gitea Workflows (compatible with Gitea Act Runner)
-#
-# Pipeline:
-#   Release/Tag → Build (restore + build) → Docker (matrix: 3 images)
-#
-# Required Secrets:
-#   REGISTRY_URL        - Gitea Container Registry URL (e.g., gitea.example.com)
-#   REGISTRY_USERNAME   - Gitea username for registry login
-#   REGISTRY_PASSWORD   - Gitea password or personal access token
-#
-# Optional:
-#   DOTNET_VERSION      - .NET SDK version (default: "10.0.x")
+# Triggered by:
+#   - release: Run tests first, then build and push Docker images (semver tags)
+#   - workflow_dispatch: Build and push Docker images only (dev-sha-* tags)
 # =============================================================================
 
-name: CI/CD Pipeline
-run-name: ${{ gitea.actor }} triggered ${{ gitea.ref_name }}
+name: Release & Docker
+run-name: ${{ gitea.actor }} ${{ gitea.ref_name }}
 
 on:
-  pull_request:
-    branches: [main, master]
   release:
     types: [published]
   workflow_dispatch:
@@ -33,10 +22,11 @@ env:
 
 jobs:
   # ===========================================================================
-  # Build
+  # Test (release only)
   # ===========================================================================
-  build:
+  test:
     name: Build and Test
+    if: gitea.event_name == 'release'
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
@@ -61,13 +51,17 @@ jobs:
       - name: Build all projects
         run: dotnet build --no-restore -c Release
 
+      - name: Run all tests
+        run: dotnet test --no-build -c Release
+
   # ===========================================================================
   # Docker Image Build & Push (parallel matrix)
   # ===========================================================================
   docker:
     name: Docker Build (${{ matrix.service }})
+    needs: [test]
+    if: always() && (needs.test.result == 'success' || needs.test.result == 'skipped')
     runs-on: ubuntu-latest
-    needs: [build]
     strategy:
       fail-fast: false
       matrix:
@@ -83,12 +77,14 @@ jobs:
           # Always include commit SHA
           TAGS="${{ env.REGISTRY }}/mingo/${{ env.IMAGE_NAME_PREFIX }}${{ matrix.service }}:${{ gitea.sha }}"
 
-          # Include dev tag for manual workflow dispatch
+          # Dev tag for manual workflow dispatch (short SHA)
           if [[ "${{ gitea.event_name }}" == "workflow_dispatch" ]]; then
-            TAGS="$TAGS,${{ env.REGISTRY }}/mingo/${{ env.IMAGE_NAME_PREFIX }}${{ matrix.service }}:dev"
+            FULL_SHA="${{ gitea.sha }}"
+            SHA_SHORT="${FULL_SHA:0:8}"
+            TAGS="$TAGS,${{ env.REGISTRY }}/mingo/${{ env.IMAGE_NAME_PREFIX }}${{ matrix.service }}:dev-sha-${SHA_SHORT}"
           fi
 
-          # Include semver tag for version tags
+          # Semver + latest for release tags
           if [[ "${{ gitea.ref_type }}" == "tag" ]]; then
             TAGS="$TAGS,${{ env.REGISTRY }}/mingo/${{ env.IMAGE_NAME_PREFIX }}${{ matrix.service }}:${{ gitea.ref_name }}"
             TAGS="$TAGS,${{ env.REGISTRY }}/mingo/${{ env.IMAGE_NAME_PREFIX }}${{ matrix.service }}:latest"
@@ -111,7 +107,7 @@ jobs:
         with:
           context: .
           file: docker/Dockerfile.${{ matrix.service }}
-          push: ${{ gitea.ref_type == 'tag' || gitea.ref_name == 'main' || gitea.ref_name == 'master' || gitea.event_name == 'workflow_dispatch' || gitea.event_name == 'release' }}
+          push: true
           tags: ${{ steps.tags.outputs.tags }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
