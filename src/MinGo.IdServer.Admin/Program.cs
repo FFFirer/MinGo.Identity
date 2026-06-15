@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.HttpOverrides;
 using OpenTelemetry.Trace;
 using MinGo.IdServer.Admin;
 using MinGo.IdServer.Admin.Components;
@@ -51,10 +52,28 @@ if (idserverAdminConfiguration.ForceHttps)
 }
 
 adminBuilder.UpdateOpenid(idserverAdminConfiguration.ClientId, idserverAdminConfiguration.ClientSecret, idserverAdminConfiguration.Scopes, idserverAdminConfiguration.IgnoreCertificateError);
+// 反向代理转发头配置：在 YARP 环境下还原客户端原始域名和协议
+// 需与 SimpleIdServer 的 IsForwardedEnabled 开关保持一致
+if (idserverAdminConfiguration.IsForwardedEnabled)
+{
+    builder.Services.Configure<ForwardedHeadersOptions>(options =>
+    {
+        options.ForwardedHeaders = ForwardedHeaders.XForwardedFor
+                                 | ForwardedHeaders.XForwardedProto
+                                 | ForwardedHeaders.XForwardedHost;
+        options.KnownIPNetworks.Clear();
+        options.KnownProxies.Clear();
+    });
+}
 var app = builder.Build();
 if (!app.Environment.IsDevelopment())
 {
     app.UseExceptionHandler("/Error");
+}
+
+if (idserverAdminConfiguration.IsForwardedEnabled)
+{
+    app.UseForwardedHeaders();
 }
 
 app.UseIdserverAdmin();

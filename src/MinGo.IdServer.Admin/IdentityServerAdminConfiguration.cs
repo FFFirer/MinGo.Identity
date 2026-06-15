@@ -11,6 +11,11 @@ public class IdentityServerAdminConfiguration
         get; set;
     }
 
+    public bool IsForwardedEnabled
+    {
+        get; set;
+    }
+
     public bool IsRealmEnabled
     {
         get; set;

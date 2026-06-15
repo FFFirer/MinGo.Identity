@@ -105,6 +105,7 @@ services:
       ClientId: ${ADMIN_CLIENT_ID:-SIDS-manager}
       ClientSecret: ${ADMIN_CLIENT_SECRET:-password}
       IsRealmEnabled: ${IS_REALM_ENABLED:-true}
+      IsForwardedEnabled: ${IS_FORWARDED_ENABLED:-false}
       IgnoreCertificateError: ${IGNORE_CERT_ERROR:-true}
     ports:
       - "${ADMIN_PORT:-5002}:5002"
