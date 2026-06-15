@@ -1,0 +1,46 @@
+# =============================================================================
+# MinGo.Identity - PR Test Workflow
+# =============================================================================
+# Runs on pull_request to verify code quality before merge.
+# Does NOT build Docker images.
+# =============================================================================
+
+name: PR Test
+run-name: ${{ gitea.actor }} PR #${{ gitea.event.pull_request.number }}
+
+on:
+  pull_request:
+    branches: [main, master]
+
+env:
+  DOTNET_VERSION: "10.0.x"
+
+jobs:
+  test:
+    name: Build and Test
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup .NET SDK
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: ${{ env.DOTNET_VERSION }}
+
+      - name: Cache NuGet packages
+        uses: actions/cache@v4
+        with:
+          path: ~/.nuget/packages
+          key: ${{ runner.os }}-nuget-${{ hashFiles('**/Directory.Packages.props') }}
+          restore-keys: |
+            ${{ runner.os }}-nuget-
+
+      - name: Restore dependencies
+        run: dotnet restore
+
+      - name: Build all projects
+        run: dotnet build --no-restore -c Release
+
+      - name: Run all tests
+        run: dotnet test --no-build -c Release
