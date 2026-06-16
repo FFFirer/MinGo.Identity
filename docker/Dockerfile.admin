@@ -40,10 +40,8 @@ COPY --from=build --chown=mingo:mingo /app/publish .
 ENV ASPNETCORE_URLS=http://+:5002
 ENV ASPNETCORE_ENVIRONMENT=Production
 
-# Health check
-HEALTHCHECK --interval=30s --timeout=5s --retries=3 \
-    CMD wget --no-verbose --tries=1 --spider http://localhost:5002/master/clients || exit 1
-
+# Health check is defined in docker-compose.prod.yml (not in Dockerfile)
+# to keep the image agnostic of orchestration-specific probe configuration.
 EXPOSE 5002
 
 ENTRYPOINT ["dotnet", "MinGo.IdServer.Admin.dll"]

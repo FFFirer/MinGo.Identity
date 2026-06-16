@@ -41,10 +41,8 @@ COPY --from=build --chown=mingo:mingo /app/publish .
 ENV ASPNETCORE_URLS=http://+:5001
 ENV ASPNETCORE_ENVIRONMENT=Production
 
-# Health check
-HEALTHCHECK --interval=30s --timeout=5s --retries=3 \
-    CMD wget --no-verbose --tries=1 --spider http://localhost:5001/.well-known/openid-configuration || exit 1
-
+# Health check is defined in docker-compose.prod.yml (not in Dockerfile)
+# to keep the image agnostic of orchestration-specific probe configuration.
 EXPOSE 5001
 
 ENTRYPOINT ["dotnet", "MinGo.IdServer.dll"]

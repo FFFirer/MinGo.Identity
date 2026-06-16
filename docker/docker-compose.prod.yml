@@ -81,10 +81,11 @@ services:
       postgres:
         condition: service_healthy
     healthcheck:
-      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:5001/.well-known/openid-configuration"]
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:5001/readyz"]
       interval: 30s
       timeout: 5s
       retries: 3
+      start_period: 10s
     restart: unless-stopped
     networks:
       - mingo-network
@@ -111,12 +112,13 @@ services:
       - "${ADMIN_PORT:-5002}:5002"
     depends_on:
       idserver:
-        condition: service_started
+        condition: service_healthy
     healthcheck:
-      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:5002/master/clients"]
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:5002/readyz"]
       interval: 30s
       timeout: 5s
       retries: 3
+      start_period: 10s
     restart: unless-stopped
     networks:
       - mingo-network

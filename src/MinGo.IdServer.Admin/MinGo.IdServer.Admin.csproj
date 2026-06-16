@@ -23,4 +23,8 @@
 		<PackageReference Include="OpenTelemetry.Exporter.OpenTelemetryProtocol" />
 		<PackageReference Include="OpenTelemetry.Exporter.Prometheus.AspNetCore" />
 	</ItemGroup>
+
+	<ItemGroup>
+		<ProjectReference Include="..\MinGo.Identity.Configuration\MinGo.Identity.Configuration.csproj" />
+	</ItemGroup>
 </Project>

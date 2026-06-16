@@ -1,7 +1,10 @@
+using Microsoft.AspNetCore.Diagnostics.HealthChecks;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.HttpOverrides;
 using OpenTelemetry.Trace;
 using MinGo.IdServer.Admin;
 using MinGo.IdServer.Admin.Components;
+using MinGo.Identity.Configuration;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -52,6 +55,13 @@ if (idserverAdminConfiguration.ForceHttps)
 }
 
 adminBuilder.UpdateOpenid(idserverAdminConfiguration.ClientId, idserverAdminConfiguration.ClientSecret, idserverAdminConfiguration.Scopes, idserverAdminConfiguration.IgnoreCertificateError);
+
+// ────────────────────────────────────────────────────────────────
+// Health checks
+// ────────────────────────────────────────────────────────────────
+builder.Services.AddIdentityHealthChecks()
+    .AddIdServerEndpointCheck(idserverAdminConfiguration.IdserverBaseUrl);
+
 // 反向代理转发头配置：在 YARP 环境下还原客户端原始域名和协议
 // 需与 SimpleIdServer 的 IsForwardedEnabled 开关保持一致
 if (idserverAdminConfiguration.IsForwardedEnabled)
@@ -66,6 +76,26 @@ if (idserverAdminConfiguration.IsForwardedEnabled)
     });
 }
 var app = builder.Build();
+
+// ────────────────────────────────────────────────────────────────
+// Health check probes (K8s style)
+// ────────────────────────────────────────────────────────────────
+app.MapHealthChecks("/healthz", new HealthCheckOptions
+{
+    Predicate = _ => false,
+    AllowCachingResponses = false
+});
+app.MapHealthChecks("/readyz", new HealthCheckOptions
+{
+    Predicate = check => check.Tags.Contains("ready"),
+    AllowCachingResponses = false
+});
+app.MapHealthChecks("/startupz", new HealthCheckOptions
+{
+    Predicate = _ => false,
+    AllowCachingResponses = false
+});
+
 if (!app.Environment.IsDevelopment())
 {
     app.UseExceptionHandler("/Error");

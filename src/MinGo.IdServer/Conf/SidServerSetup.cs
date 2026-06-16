@@ -155,6 +155,18 @@ public class SidServerSetup
         }
 
         ConfigureDistributedCache(webApplicationBuilder);
+
+        // ────────────────────────────────────────────────────────────
+        // Health checks
+        // ────────────────────────────────────────────────────────────
+        var storageSection = webApplicationBuilder.Configuration.GetSection(nameof(StorageConfiguration));
+        var storageConf = storageSection.Get<StorageConfiguration>() ?? new StorageConfiguration();
+        var healthBuilder = webApplicationBuilder.Services.AddIdentityHealthChecks();
+        if (storageConf.Type == StorageTypes.POSTGRE || storageConf.Type == StorageTypes.SQLSERVER)
+        {
+            healthBuilder.AddPostgreSqlReadinessCheck(storageConf.ConnectionString);
+        }
+
         // Seed 数据迁移至 MinGo.Identity.Migrator，部署时统一执行
     }
 
