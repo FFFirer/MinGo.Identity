@@ -7,10 +7,17 @@ using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Serilog;
 using MinGo.IdServer;
 using MinGo.IdServer.Conf;
 
 var webApplicationBuilder = WebApplication.CreateBuilder(args);
+
+// Serilog: 接管日志管线，配置由 appsettings 驱动
+webApplicationBuilder.Host.UseSerilog((context, config) =>
+{
+    config.ReadFrom.Configuration(context.Configuration);
+});
 webApplicationBuilder.Services.AddCors(options => options.AddPolicy("AllowAll", p => p.AllowAnyOrigin()
     .AllowAnyMethod()
     .AllowAnyHeader()));

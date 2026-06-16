@@ -109,6 +109,9 @@
 		<!-- 消息队列 MassTransit（模板引用，默认 INMEMORY） -->
 		<PackageReference Include="MassTransit.SqlTransport.SqlServer" />
 
+		<!-- Serilog 结构化日志 -->
+		<PackageReference Include="Serilog.AspNetCore" />
+
 		<!-- OpenTelemetry 导出器（模板代码引用，默认关闭） -->
 		<PackageReference Include="OpenTelemetry.Exporter.Console" />
 		<PackageReference Include="OpenTelemetry.Exporter.OpenTelemetryProtocol" />
