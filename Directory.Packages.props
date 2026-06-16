@@ -139,6 +139,12 @@
     <PackageVersion Include="Microsoft.Extensions.Diagnostics.HealthChecks.Abstractions" Version="10.0.9" />
   </ItemGroup>
 
+  <!-- ==================== Serilog 结构化日志 ==================== -->
+  <ItemGroup>
+    <PackageVersion Include="Serilog.AspNetCore" Version="9.0.0" />
+    <PackageVersion Include="Serilog.Formatting.Compact" Version="3.0.0" />
+  </ItemGroup>
+
   <!-- ==================== 安全修复（传递依赖固定版本） ==================== -->
   <ItemGroup>
     <PackageVersion Include="Microsoft.Bcl.Memory" Version="10.0.4" />
