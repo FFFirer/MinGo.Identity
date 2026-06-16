@@ -9,6 +9,7 @@ WORKDIR /src
 
 # Copy project files for restore (layer caching optimization)
 COPY Directory.Build.props Directory.Packages.props nuget.config ./
+COPY src/MinGo.Identity.Configuration/MinGo.Identity.Configuration.csproj src/MinGo.Identity.Configuration/
 COPY src/MinGo.IdServer.Admin/MinGo.IdServer.Admin.csproj src/MinGo.IdServer.Admin/
 
 # Restore with cached packages
