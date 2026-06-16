@@ -160,6 +160,101 @@ public class MigratorIntegrationTests : IClassFixture<DbFixture>
     }
 
     // ============================================================
+    //  Seed Data 验证 — SIDS-manager 客户端
+    // ============================================================
+
+    [Fact]
+    public async Task Seed_ShouldCreateSidManagerClient()
+    {
+        await RunMigrateAsync();
+
+        await using var conn = new NpgsqlConnection(_fixture.ConnectionString);
+        await conn.OpenAsync();
+
+        // 验证 SIDS-manager 客户端存在（表名来自 EF Core 约定：Client → "Clients"）
+        await using var clientCmd = new NpgsqlCommand(
+            """SELECT "Id", "ClientSecret", "ClientId" FROM "Clients" WHERE "ClientId" = 'SIDS-manager'""",
+            conn);
+        await using var reader = await clientCmd.ExecuteReaderAsync();
+
+        Assert.True(await reader.ReadAsync(),
+            "SIDS-manager client was NOT created by migration pipeline. " +
+            "Check that RegisterAdministrationSeeders() is called in MigratorService.");
+
+        var clientId = reader.GetString(reader.GetOrdinal("ClientId"));
+        var clientSecret = reader.GetString(reader.GetOrdinal("ClientSecret"));
+
+        _output.WriteLine($"Found client: {clientId}");
+        Assert.Equal("SIDS-manager", clientId);
+        Assert.False(string.IsNullOrEmpty(clientSecret),
+            "SIDS-manager client secret should not be empty");
+    }
+
+    [Fact]
+    public async Task Seed_ShouldCreateSidManagerClientWithClientCredentialsGrant()
+    {
+        await RunMigrateAsync();
+
+        await using var conn = new NpgsqlConnection(_fixture.ConnectionString);
+        await conn.OpenAsync();
+
+        // SIDS-manager 必须有 client_credentials grant type（admin 容器依赖它换取 access token）
+        // GrantTypes 存储为 JSON 数组字符串，如 '["client_credentials","authorization_code"]'
+        await using var grantCmd = new NpgsqlCommand(
+            """
+            SELECT EXISTS (
+                SELECT 1 FROM "Clients"
+                WHERE "ClientId" = 'SIDS-manager'
+                  AND "GrantTypes"::jsonb ? 'client_credentials'
+            )
+            """,
+            conn);
+        var hasClientCredentials = (bool)(await grantCmd.ExecuteScalarAsync())!;
+
+        _output.WriteLine($"SIDS-manager has client_credentials grant: {hasClientCredentials}");
+        Assert.True(hasClientCredentials,
+            "SIDS-manager must support client_credentials grant type for admin API access");
+    }
+
+    [Fact]
+    public async Task Seed_ShouldCreateAdministrativeScopes()
+    {
+        await RunMigrateAsync();
+
+        await using var conn = new NpgsqlConnection(_fixture.ConnectionString);
+        await conn.OpenAsync();
+
+        // 验证关键管理域存在（EF Core 表名：Scope → "Scopes"）
+        await using var scopeCmd = new NpgsqlCommand(
+            """SELECT COUNT(*) FROM "Scopes" WHERE "Name" = 'role' OR "Name" = 'provisioning'""",
+            conn);
+        var count = (long)(await scopeCmd.ExecuteScalarAsync())!;
+
+        _output.WriteLine($"Administrative scopes (role, provisioning) found: {count}");
+        Assert.True(count >= 2,
+            "Expected at least 2 administrative scopes to be seeded");
+    }
+
+    [Fact]
+    public async Task Seed_ShouldCreateDefaultUser()
+    {
+        // InitUserDataSeeder 创建 SIS 默认用户
+        await RunMigrateAsync();
+
+        await using var conn = new NpgsqlConnection(_fixture.ConnectionString);
+        await conn.OpenAsync();
+
+        await using var userCmd = new NpgsqlCommand(
+            """SELECT COUNT(*) FROM "Users" WHERE "Realm" = 'master'""",
+            conn);
+        var userCount = (long)(await userCmd.ExecuteScalarAsync())!;
+
+        _output.WriteLine($"Users in master realm: {userCount}");
+        Assert.True(userCount > 0,
+            "Expected at least one default user to be seeded in master realm");
+    }
+
+    // ============================================================
     //  端到端 CLI 验证 — 通过 dotnet run 进程调用
     // ============================================================
 

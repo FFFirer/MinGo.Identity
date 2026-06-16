@@ -8,9 +8,11 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using MinGo.Identity.Configuration;
 using MinGo.Identity.Migrations;
+using SimpleIdServer.IdServer.Domains;
 using SimpleIdServer.IdServer.Store.EF;
 using SimpleIdServer.IdServer.Migrations;
 using SimpleIdServer.IdServer.Migrations.DataSeeder;
+using SimpleIdServer.IdServer.Stores;
 
 namespace MinGo.Identity.Migrator;
 
@@ -114,6 +116,12 @@ public class MigratorService
         RegisterSisDataSeeders(services);
 
         // ════════════════════════════════════════════════════════════════
+        // SimpleIdServer SeedAdministrationData — 管理后台种子数据
+        // 等价于 IdServerBuilder.SeedAdministrationData()，创建 SIDS-manager 客户端等
+        // ════════════════════════════════════════════════════════════════
+        RegisterAdministrationSeeders(services);
+
+        // ════════════════════════════════════════════════════════════════
         // 自定义扩展
         // ════════════════════════════════════════════════════════════════
         services.AddTransient<IDbMigrateService, ExtStoreDbMigrateService>();
@@ -127,6 +135,43 @@ public class MigratorService
 
         var sp = services.BuildServiceProvider();
         sp.SeedData();
+    }
+
+    /// <summary>
+    /// 注册 SimpleIdServer SeedAdministrationData 中定义的种子数据 seeder。
+    /// 等价于 IdServerBuilder.SeedAdministrationData() 的 DI 注册逻辑。
+    /// 创建 SIDS-manager 客户端、管理域、用户组和种子用户。
+    /// </summary>
+    private static void RegisterAdministrationSeeders(IServiceCollection services)
+    {
+        // 管理域
+        services.AddTransient<IDataSeeder, SimpleIdServer.IdServer.DataSeeder.InitAdministrativeScopeDataSeeder>();
+        // 用户组（administrators 等）
+        services.AddTransient<IDataSeeder, SimpleIdServer.IdServer.DataSeeder.InitGroupDataSeeder>();
+        // 种子用户（SIS 默认用户）
+        services.AddTransient<IDataSeeder, SimpleIdServer.IdServer.DataSeeder.InitUserDataSeeder>();
+        // SIDS-manager 管理客户端 — 这是 admin 容器 OIDC client_credentials 所依赖的核心
+        services.AddTransient<IDataSeeder>((s) =>
+        {
+            var scope = s.CreateScope();
+            var transactionBuilder = scope.ServiceProvider.GetRequiredService<ITransactionBuilder>();
+            var realmRepository = scope.ServiceProvider.GetRequiredService<IRealmRepository>();
+            var scopeRepository = scope.ServiceProvider.GetRequiredService<IScopeRepository>();
+            var clientRepository = scope.ServiceProvider.GetRequiredService<IClientRepository>();
+            var dataseederRepository = scope.ServiceProvider.GetRequiredService<IDataSeederExecutionHistoryRepository>();
+            return new SimpleIdServer.IdServer.DataSeeder.InitAdministrativeClientDataseeder(
+                new List<string>(),         // redirectUrls — 由 IdServer 启动时的 AfterDeployment 补充
+                new List<string>(),         // postLogoutUrls
+                string.Empty,               // backchannelLogoutUrl
+                new List<Scope>(),          // additionalScopes
+                transactionBuilder,
+                realmRepository,
+                scopeRepository,
+                clientRepository,
+                dataseederRepository);
+        });
+        // 为 SIDS-manager 分配 Templates scope
+        services.AddTransient<IDataSeeder, SimpleIdServer.IdServer.DataSeeder.AssignTemplateScopeToClientDataSeeder>();
     }
 
     private void EnableMigration(ServiceCollection services)
