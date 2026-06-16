@@ -2,11 +2,18 @@ using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.HttpOverrides;
 using OpenTelemetry.Trace;
+using Serilog;
 using MinGo.IdServer.Admin;
 using MinGo.IdServer.Admin.Components;
 using MinGo.Identity.Configuration;
 
 var builder = WebApplication.CreateBuilder(args);
+
+// Serilog: 接管日志管线，配置由 appsettings 驱动
+builder.Host.UseSerilog((context, config) =>
+{
+    config.ReadFrom.Configuration(context.Configuration);
+});
 
 builder.Configuration.AddJsonFile("appsettings.json")
     .AddJsonFile($"appsettings.{builder.Environment.EnvironmentName}.json", optional: true)

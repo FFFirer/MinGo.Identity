@@ -18,6 +18,9 @@
 		<PackageReference Include="Microsoft.Web.LibraryManager.Build" />
 		-->
 
+			<!-- Serilog 结构化日志 -->
+		<PackageReference Include="Serilog.AspNetCore" />
+
 		<!-- OpenTelemetry 导出器（模板 IdentityServerAdminConfiguration 代码引用） -->
 		<PackageReference Include="OpenTelemetry.Exporter.Console" />
 		<PackageReference Include="OpenTelemetry.Exporter.OpenTelemetryProtocol" />
