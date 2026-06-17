@@ -27,7 +27,9 @@ FROM mcr.microsoft.com/dotnet/aspnet:10.0-alpine AS runtime
 WORKDIR /app
 
 # Install ICU globalization support (SimpleIdServer requires CultureInfo)
-RUN apk add --no-cache icu-libs icu-data-full
+# Use Aliyun mirror for faster downloads in China mainland network environment
+RUN sed -i 's|dl-cdn.alpinelinux.org|mirrors.aliyun.com|g' /etc/apk/repositories \
+    && apk add --no-cache icu-libs icu-data-full
 ENV DOTNET_SYSTEM_GLOBALIZATION_INVARIANT=0
 
 # Create non-root user
