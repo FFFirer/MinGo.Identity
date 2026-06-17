@@ -12,7 +12,8 @@ public static class ConfigurationHelper
     {
         StorageTypes.SQLSERVER => "SimpleIdServer.IdServer.SqlServerMigrations",
         StorageTypes.POSTGRE => "SimpleIdServer.IdServer.PostgreMigrations",
-        StorageTypes.MYSQL => "SimpleIdServer.IdServer.MySQLMigrations",
+        StorageTypes.MYSQL => throw new NotSupportedException("MySQL storage is not supported. Use PostgreSQL instead."),
+        // StorageTypes.MYSQL => "SimpleIdServer.IdServer.MySQLMigrations",
         StorageTypes.SQLITE => "SimpleIdServer.IdServer.SqliteMigrations",
         StorageTypes.INMEMORY => null,
         _ => throw new ArgumentOutOfRangeException(nameof(type), type, null)
@@ -25,7 +26,8 @@ public static class ConfigurationHelper
     {
         StorageTypes.SQLSERVER => "SidFormBuilder.SqlServerMigrations",
         StorageTypes.POSTGRE => "SidFormBuilder.PostgreMigrations",
-        StorageTypes.MYSQL => "SidFormBuilder.MySQLMigrations",
+        StorageTypes.MYSQL => throw new NotSupportedException("MySQL storage is not supported. Use PostgreSQL instead."),
+        // StorageTypes.MYSQL => "SidFormBuilder.MySQLMigrations",
         StorageTypes.SQLITE => "SidFormBuilder.SqliteMigrations",
         StorageTypes.INMEMORY => null,
         _ => throw new ArgumentOutOfRangeException(nameof(type), type, null)
@@ -67,12 +69,13 @@ public static class ConfigurationHelper
                 break;
 
             case StorageTypes.MYSQL:
-                builder.UseMySql(config.ConnectionString, ServerVersion.AutoDetect(config.ConnectionString), o =>
-                {
-                    o.MigrationsAssembly(migrationsAssembly);
-                    o.UseQuerySplittingBehavior(QuerySplittingBehavior.SplitQuery);
-                });
-                break;
+                throw new NotSupportedException("MySQL storage is not supported. Use PostgreSQL instead.");
+                // builder.UseMySql(config.ConnectionString, ServerVersion.AutoDetect(config.ConnectionString), o =>
+                // {
+                //     o.MigrationsAssembly(migrationsAssembly);
+                //     o.UseQuerySplittingBehavior(QuerySplittingBehavior.SplitQuery);
+                // });
+                // break;
 
             case StorageTypes.INMEMORY:
                 builder.UseInMemoryDatabase(config.ConnectionString);

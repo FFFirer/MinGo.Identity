@@ -56,13 +56,10 @@
 
 		<!-- 以下为模板 SidServerSetup 代码引用的其他后端（保持编译通过，运行时由配置切换） -->
 		<PackageReference Include="SimpleIdServer.IdServer.SqlServerMigrations" />
-		<PackageReference Include="SimpleIdServer.IdServer.MySQLMigrations" />
 		<PackageReference Include="SimpleIdServer.IdServer.SqliteMigrations" />
 		<PackageReference Include="SidFormBuilder.SqlServerMigrations" />
-		<PackageReference Include="SidFormBuilder.MySQLMigrations" />
 		<PackageReference Include="SidFormBuilder.SqliteMigrations" />
 		<PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" />
-		<PackageReference Include="Pomelo.Extensions.Caching.MySql" />
 		<PackageReference Include="NeoSmart.Caching.Sqlite.AspNetCore" />
 		<PackageReference Include="Microsoft.Extensions.Caching.SqlServer" />
 	</ItemGroup>
@@ -101,9 +98,10 @@
 		<PackageReference Include="Microsoft.Extensions.Caching.StackExchangeRedis" />  <!-- Redis 缓存 -->
 
 		<!-- 后台任务 Hangfire（模板引用多后端，仅 PostgreSQL 运行时使用） -->
+		<PackageReference Include="Hangfire.AspNetCore" />
+		<PackageReference Include="Hangfire.NetCore" />
 		<PackageReference Include="Hangfire.PostgreSql" />
 		<PackageReference Include="Hangfire.SqlServer" />
-		<PackageReference Include="Hangfire.MySqlStorage" />
 		<PackageReference Include="Hangfire.SQLite" />
 
 		<!-- 消息队列 MassTransit（模板引用，默认 INMEMORY） -->

@@ -37,7 +37,7 @@
                     <!-- Name -->
                     <li>
                         <h6>@ProfileResource.name</h6>
-                        <span class="text-muted">@User.Identity.Name</span>
+                        <span class="text-muted">@User.Identity!.Name</span>
                     </li>
                     <!-- OTP Key -->
                     <li>
@@ -130,9 +130,12 @@
                                                 {
                                                     <span>-</span>
                                                 }
-                                                @foreach(var scope in consent.Scopes)
+                                                @if (consent.Scopes != null)
                                                 {
-                                                    <span class="badge bg-secondary">@scope</span>
+                                                    foreach(var scope in consent.Scopes)
+                                                    {
+                                                        <span class="badge bg-secondary">@scope</span>
+                                                    }
                                                 }
                                             </td>
                                             <td>@consent.Requester</td>

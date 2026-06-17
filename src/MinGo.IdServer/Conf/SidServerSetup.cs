@@ -3,7 +3,6 @@
 using Community.Microsoft.Extensions.Caching.PostgreSql;
 using FormBuilder;
 using Hangfire;
-using Hangfire.MySql;
 using Hangfire.PostgreSql;
 using Hangfire.SQLite;
 using MassTransit;
@@ -13,8 +12,7 @@ using Microsoft.AspNetCore.Server.Kestrel.Https;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using NeoSmart.Caching.Sqlite.AspNetCore;
-using OpenTelemetry.Metrics;
+using NeoSmart.Caching.Sqlite;using OpenTelemetry.Metrics;
 using OpenTelemetry.Trace;
 using SimpleIdServer.Configuration;
 using SimpleIdServer.Configuration.Redis;
@@ -177,8 +175,9 @@ public class SidServerSetup
         switch(conf.Transport)
         {
             case StorageTypes.MYSQL:
-                db.UseMySql(conf.ConnectionString, ServerVersion.AutoDetect(conf.ConnectionString));
-                break;
+                throw new NotSupportedException("MySQL storage is not supported. Use PostgreSQL instead.");
+                // db.UseMySql(conf.ConnectionString, ServerVersion.AutoDetect(conf.ConnectionString));
+                // break;
             case StorageTypes.POSTGRE:
                 db.UseNpgsql(conf.ConnectionString);
                 break;
@@ -201,8 +200,9 @@ public class SidServerSetup
         switch (conf.Transport)
         {
             case StorageTypes.MYSQL:
-                db.UseMySql(conf.ConnectionString, ServerVersion.AutoDetect(conf.ConnectionString));
-                break;
+                throw new NotSupportedException("MySQL storage is not supported. Use PostgreSQL instead.");
+                // db.UseMySql(conf.ConnectionString, ServerVersion.AutoDetect(conf.ConnectionString));
+                // break;
             case StorageTypes.POSTGRE:
                 db.UseNpgsql(conf.ConnectionString);
                 break;
@@ -284,18 +284,19 @@ public class SidServerSetup
                 configuration.UsePostgreSqlStorage(o => o.UseNpgsqlConnection(conf.ConnectionString));
                 break;
             case StorageTypes.MYSQL:
-                configuration.UseStorage(new MySqlStorage(conf.ConnectionString, new MySqlStorageOptions
-                {
-                    TransactionIsolationLevel = IsolationLevel.ReadCommitted,
-                    QueuePollInterval = TimeSpan.FromSeconds(15),
-                    JobExpirationCheckInterval = TimeSpan.FromHours(1),
-                    CountersAggregateInterval = TimeSpan.FromMinutes(5),
-                    PrepareSchemaIfNecessary = true,
-                    DashboardJobListLimit = 50000,
-                    TransactionTimeout = TimeSpan.FromMinutes(1),
-                    TablesPrefix = "Hangfire"
-                }));
-                break;
+                throw new NotSupportedException("MySQL Hangfire storage is not supported. Use PostgreSQL instead.");
+                // configuration.UseStorage(new MySqlStorage(conf.ConnectionString, new MySqlStorageOptions
+                // {
+                //     TransactionIsolationLevel = IsolationLevel.ReadCommitted,
+                //     QueuePollInterval = TimeSpan.FromSeconds(15),
+                //     JobExpirationCheckInterval = TimeSpan.FromHours(1),
+                //     CountersAggregateInterval = TimeSpan.FromMinutes(5),
+                //     PrepareSchemaIfNecessary = true,
+                //     DashboardJobListLimit = 50000,
+                //     TransactionTimeout = TimeSpan.FromMinutes(1),
+                //     TablesPrefix = "Hangfire"
+                // }));
+                // break;
             case StorageTypes.SQLITE:
                 configuration.UseSQLiteStorage(conf.ConnectionString);
                 break;
@@ -366,13 +367,14 @@ public class SidServerSetup
                 });
                 break;
             case DistributedCacheTypes.MYSQL:
-                builder.Services.AddDistributedMySqlCache(opts =>
-                {
-                    opts.ConnectionString = conf.ConnectionString;
-                    opts.SchemaName = "idserver";
-                    opts.TableName = "DistributedCache";
-                });
-                break;
+                throw new NotSupportedException("MySQL distributed cache is not supported. Use PostgreSQL instead.");
+                // builder.Services.AddDistributedMySqlCache(opts =>
+                // {
+                //     opts.ConnectionString = conf.ConnectionString;
+                //     opts.SchemaName = "idserver";
+                //     opts.TableName = "DistributedCache";
+                // });
+                // break;
             case DistributedCacheTypes.SQLITE:
                 builder.Services.AddSqliteCache(options =>
                 {

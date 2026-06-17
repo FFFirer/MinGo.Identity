@@ -74,7 +74,8 @@ public class ClientTypeDataSeeder : BaseBeforeDeploymentDataSeeder
         }
         else if (db.IsMySql())
         {
-            return "SELECT `Id`, `ClientType` FROM `Clients`";
+            throw new NotSupportedException("MySQL is not supported. Use PostgreSQL instead.");
+            // return "SELECT `Id`, `ClientType` FROM `Clients`";
         }
         else if (db.IsSqlite())
         {

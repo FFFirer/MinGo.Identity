@@ -55,7 +55,8 @@ public class DropDistributedCacheDataSeeder : BaseBeforeDeploymentDataSeeder
         }
         else if (db.IsMySql())
         {
-            return "DROP TABLE IF EXISTS `DistributedCache`;";
+            throw new NotSupportedException("MySQL is not supported. Use PostgreSQL instead.");
+            // return "DROP TABLE IF EXISTS `DistributedCache`;";
         }
         else if (db.IsSqlite())
         {

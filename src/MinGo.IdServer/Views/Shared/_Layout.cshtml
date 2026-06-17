@@ -10,13 +10,13 @@
 @{
     var returnUrl = string.IsNullOrEmpty(Context.Request.Path) ? "~/" : $"~{Context.Request.Path.Value}{Context.Request.QueryString}";
     var currentCultureInfo = CultureInfo.DefaultThreadCurrentUICulture;
-    string languagesLabel = LayoutResource.ResourceManager.GetString("languages");
+    string languagesLabel = LayoutResource.ResourceManager.GetString("languages")!;
     if (currentCultureInfo != null && !string.IsNullOrWhiteSpace(currentCultureInfo.Name))
     {
         var str = LayoutResource.ResourceManager.GetString(currentCultureInfo.Name);
         if (!string.IsNullOrWhiteSpace(str))
         {
-            languagesLabel = string.Format(LayoutResource.ResourceManager.GetString("selected_language"), str);
+            languagesLabel = string.Format(LayoutResource.ResourceManager.GetString("selected_language")!, str);
         }
     }
     Layout = "~/Views/Shared/_CommonLayout.cshtml";
@@ -32,11 +32,11 @@
         </button>
         <div class="collapse navbar-collapse" id="navbarSupportedContent">
             <ul class="navbar-nav me-auto">
-                @if (User.Identity.IsAuthenticated)
+                @if (User.Identity?.IsAuthenticated == true)
                 {
                     <li class="nav-item">
                         <a class="nav-link" href="@Url.Action("Profile", "Home")">
-                            Welcome @User.Identity.Name
+                            Welcome @User.Identity!.Name
                         </a>
                     </li>
                 }
@@ -52,7 +52,7 @@
                 @RenderSection("SubMenu", required: false)
             </ul>
             <ul class="navbar-nav">
-                @if(User.Identity.IsAuthenticated)
+                @if(User.Identity?.IsAuthenticated == true)
                 {
                     <li class="nav-item">
                         <a class="nav-link" href="@Url.Action("Disconnect", "Home", new { area = "" })">@LayoutResource.disconnect</a>

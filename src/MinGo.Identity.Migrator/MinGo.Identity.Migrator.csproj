@@ -41,12 +41,10 @@
 		<!-- SimpleIdServer IdServer -->
 		<PackageReference Include="SimpleIdServer.IdServer.PostgreMigrations" />
 		<PackageReference Include="SimpleIdServer.IdServer.SqlServerMigrations" />
-		<PackageReference Include="SimpleIdServer.IdServer.MySQLMigrations" />
 		<PackageReference Include="SimpleIdServer.IdServer.SqliteMigrations" />
 		<!-- SidFormBuilder -->
 		<PackageReference Include="SidFormBuilder.PostgreMigrations" />
 		<PackageReference Include="SidFormBuilder.SqlServerMigrations" />
-		<PackageReference Include="SidFormBuilder.MySQLMigrations" />
 		<PackageReference Include="SidFormBuilder.SqliteMigrations" />
 	</ItemGroup>
 

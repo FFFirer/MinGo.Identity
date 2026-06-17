@@ -51,14 +51,14 @@
 
                         @if(Model.Scopes == null || !Model.Scopes.Any())
                         {                            
-                            <li class="list-group-item"><b>@BCConsentsResource.scopes</b> : @string.Join(",", Model.Scopes)</li>
+                            <li class="list-group-item"><b>@BCConsentsResource.scopes</b> : @string.Join(",", Model.Scopes!)</li>
                         }
 
                         @if(Model.AuthorizationDetails != null && Model.AuthorizationDetails.Any())
                         {
                             foreach(var authDetail in Model.AuthorizationDetails)
                             {
-                                <li class="list-group-item"><b>@authDetail.Type</b> : @string.Join(",", authDetail.Actions)</li>
+                                <li class="list-group-item"><b>@authDetail.Type</b> : @string.Join(",", authDetail.Actions!)</li>
                             }
                         }
                     </ul>
