@@ -1,0 +1,36 @@
+# =============================================================================
+# MinGo.Identity - PostgreSQL (Development)
+# =============================================================================
+# Usage:
+#   # Start PostgreSQL only
+#   docker compose -f docker/docker-compose.postgres.yml up -d
+#
+#   # Stop and cleanup
+#   docker compose -f docker/docker-compose.postgres.yml down
+#
+#   # Stop and remove data
+#   docker compose -f docker/docker-compose.postgres.yml down -v
+# =============================================================================
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: mingo-postgres
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
+      POSTGRES_DB: ${POSTGRES_DB:-mingo_identity}
+    ports:
+      - "${PG_PORT:-5432}:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-postgres}"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+
+volumes:
+  postgres_data:
+    driver: local

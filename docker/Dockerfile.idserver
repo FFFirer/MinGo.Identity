@@ -23,13 +23,17 @@ RUN dotnet publish src/MinGo.IdServer/MinGo.IdServer.csproj \
     --no-restore
 
 # Stage 2: Runtime
-FROM mcr.microsoft.com/dotnet/aspnet:10.0-alpine AS runtime
+FROM mcr.microsoft.com/dotnet/aspnet:10.0-slim AS runtime
 WORKDIR /app
 
-# Install ICU globalization support (SimpleIdServer requires CultureInfo)
+# Install native dependencies (Kerberos/GSSAPI for LDAP, ICU for globalization)
 # Use Aliyun mirror for faster downloads in China mainland network environment
-RUN sed -i 's|dl-cdn.alpinelinux.org|mirrors.aliyun.com|g' /etc/apk/repositories \
-    && apk add --no-cache icu-libs icu-data-full
+RUN sed -i 's|deb.debian.org|mirrors.aliyun.com|g' /etc/apt/sources.list.d/debian.sources \
+    && apt-get update \
+    && apt-get install -y --no-install-recommends \
+        libgssapi-krb5-2 \
+        icu-libs \
+    && rm -rf /var/lib/apt/lists/*
 ENV DOTNET_SYSTEM_GLOBALIZATION_INVARIANT=0
 
 # Create non-root user

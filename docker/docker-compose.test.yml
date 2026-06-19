@@ -1,0 +1,125 @@
+# =============================================================================
+# MinGo.Identity - Integration Test Environment
+# =============================================================================
+# Usage:
+#   # Start test environment
+#   docker compose -f docker/docker-compose.test.yml up -d
+#
+#   # Run tests
+#   dotnet test
+#
+#   # Stop and cleanup
+#   docker compose -f docker/docker-compose.test.yml down -v
+# =============================================================================
+
+services:
+  # ===========================================================================
+  # PostgreSQL Database (Test)
+  # ===========================================================================
+  postgres:
+    image: postgres:16-alpine
+    container_name: mingo-postgres-test
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
+      POSTGRES_DB: ${POSTGRES_DB:-mingo_identity_test}
+    ports:
+      - "${PG_PORT:-5433}:5432"
+    volumes:
+      - postgres_test_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-postgres}"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+
+  # ===========================================================================
+  # Database Migration (one-shot)
+  # ===========================================================================
+  migrate:
+    image: mcr.microsoft.com/dotnet/sdk:10.0
+    container_name: mingo-migrate-test
+    working_dir: /src
+    volumes:
+      - ../:/src
+    command: >
+      dotnet run --project src/MinGo.Identity.Migrator -- migrate
+    environment:
+      DOTNET_ENVIRONMENT: Test
+      StorageConfiguration__Type: ${STORAGE_TYPE:-POSTGRE}
+      StorageConfiguration__ConnectionString: Host=postgres;Port=5432;Database=${POSTGRES_DB:-mingo_identity_test};Username=${POSTGRES_USER:-postgres};Password=${POSTGRES_PASSWORD:-postgres}
+    depends_on:
+      postgres:
+        condition: service_healthy
+    restart: no
+
+  # ===========================================================================
+  # IdServer - OIDC/OAuth2 Identity Provider
+  # ===========================================================================
+  idserver:
+    image: mcr.microsoft.com/dotnet/sdk:10.0
+    container_name: mingo-idserver-test
+    working_dir: /src
+    volumes:
+      - ../:/src
+    command: >
+      dotnet run --project src/MinGo.IdServer --no-build
+    environment:
+      ASPNETCORE_URLS: http://+:5001
+      ASPNETCORE_ENVIRONMENT: Test
+      StorageConfiguration__Type: ${STORAGE_TYPE:-POSTGRE}
+      StorageConfiguration__ConnectionString: Host=postgres;Port=5432;Database=${POSTGRES_DB:-mingo_identity_test};Username=${POSTGRES_USER:-postgres};Password=${POSTGRES_PASSWORD:-postgres}
+      Authority: ${AUTHORITY:-http://localhost:5001}
+      AdminUiUrl: ${ADMIN_UI_URL:-http://localhost:5002}
+      IsRealmEnabled: ${IS_REALM_ENABLED:-true}
+      IsForwardedEnabled: ${IS_FORWARDED_ENABLED:-false}
+    ports:
+      - "${IDSERVER_PORT:-5001}:5001"
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:5001/readyz"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 30s
+    restart: unless-stopped
+
+  # ===========================================================================
+  # Admin - Blazor Management Dashboard
+  # ===========================================================================
+  admin:
+    image: mcr.microsoft.com/dotnet/sdk:10.0
+    container_name: mingo-admin-test
+    working_dir: /src
+    volumes:
+      - ../:/src
+    command: >
+      dotnet run --project src/MinGo.IdServer.Admin --no-build
+    environment:
+      ASPNETCORE_URLS: http://+:5002
+      ASPNETCORE_ENVIRONMENT: Test
+      IdserverBaseUrl: ${IDSERVER_BASE_URL:-http://idserver:5001}
+      ClientId: ${ADMIN_CLIENT_ID:-SIDS-manager}
+      ClientSecret: ${ADMIN_CLIENT_SECRET:-password}
+      IsRealmEnabled: ${IS_REALM_ENABLED:-true}
+      IsForwardedEnabled: ${IS_FORWARDED_ENABLED:-false}
+      IgnoreCertificateError: ${IGNORE_CERT_ERROR:-true}
+    ports:
+      - "${ADMIN_PORT:-5002}:5002"
+    depends_on:
+      idserver:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:5002/readyz"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 30s
+    restart: unless-stopped
+
+volumes:
+  postgres_test_data:
+    driver: local

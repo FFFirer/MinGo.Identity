@@ -31,14 +31,39 @@
 - [Docker](https://www.docker.com/products/docker-desktop) (用于 PostgreSQL)
 - PowerShell 或 Bash
 
-### 1. 启动数据库
+### 方式一：本地开发（推荐）
+
+使用 Docker Compose 一键启动完整开发环境，支持代码热重载：
+
+```powershell
+# 启动所有服务（PostgreSQL + IdServer + Admin）
+docker compose -f docker/docker-compose.dev.yml up
+
+# 或在后台启动
+docker compose -f docker/docker-compose.dev.yml up -d
+
+# 查看日志
+docker compose -f docker/docker-compose.dev.yml logs -f
+
+# 停止服务
+docker compose -f docker/docker-compose.dev.yml down
+```
+
+启动后：
+- IdServer: http://localhost:5001
+- Admin: http://localhost:5002
+- PostgreSQL: localhost:5432
+
+### 方式二：手动启动
+
+#### 1. 启动数据库
 
 ```powershell
 # 启动 PostgreSQL 容器
-docker-compose up -d postgres
+docker compose -f docker/docker-compose.postgres.yml up -d
 
 # 验证数据库状态
-docker-compose ps
+docker compose -f docker/docker-compose.postgres.yml ps
 ```
 
 ### 2. 还原依赖
@@ -80,7 +105,16 @@ MinGo.Identity/
 ├── Directory.Packages.props       # CPM - 集中包版本管理
 ├── Directory.Build.props          # 全局 MSBuild 属性
 ├── nuget.config                   # NuGet 源配置
-├── docker-compose.yml             # 本地开发环境
+├── docker/
+│   ├── docker-compose.postgres.yml    # PostgreSQL 仅（开发用）
+│   ├── docker-compose.dev.yml         # 完整开发环境（热重载）
+│   ├── docker-compose.test.yml        # 集成测试
+│   ├── docker-compose.prod.yml        # 生产部署
+│   ├── .env                           # 本地开发环境变量
+│   ├── .env.test                      # 集成测试环境变量
+│   ├── Dockerfile.idserver            # IdServer 镜像
+│   ├── Dockerfile.admin               # Admin 镜像
+│   └── Dockerfile.migrator            # Migrator 镜像
 ├── src/
 │   ├── MinGo.IdServer/            # 身份服务核心 (Port 5001)
 │   │   ├── Program.cs             # SimpleIdServer 配置
@@ -164,6 +198,27 @@ curl -X POST https://localhost:5001/connect/token \
   -d "client_secret=test_secret" \
   -d "scope=api1"
 ```
+
+## 🧪 集成测试
+
+### 启动测试环境
+
+```powershell
+# 启动测试环境（使用独立的测试数据库）
+docker compose -f docker/docker-compose.test.yml up -d
+
+# 运行测试
+dotnet test
+
+# 停止并清理测试环境
+docker compose -f docker/docker-compose.test.yml down -v
+```
+
+测试环境特点：
+- PostgreSQL 端口：5433（避免与开发环境冲突）
+- 数据库名：`mingo_identity_test`
+- 自动执行数据库迁移
+- 完整的服务栈（PostgreSQL + IdServer + Admin）
 
 ## 🛠️ 故障排除
 

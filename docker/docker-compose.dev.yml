@@ -1,0 +1,93 @@
+# =============================================================================
+# MinGo.Identity - Local Development
+# =============================================================================
+# Usage:
+#   # Start all services
+#   docker compose -f docker/docker-compose.dev.yml up
+#
+#   # Start in background
+#   docker compose -f docker/docker-compose.dev.yml up -d
+#
+#   # Stop and cleanup
+#   docker compose -f docker/docker-compose.dev.yml down
+# =============================================================================
+
+services:
+  # ===========================================================================
+  # PostgreSQL Database
+  # ===========================================================================
+  postgres:
+    image: postgres:16-alpine
+    container_name: mingo-postgres-dev
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
+      POSTGRES_DB: ${POSTGRES_DB:-mingo_identity}
+    ports:
+      - "${PG_PORT:-5432}:5432"
+    volumes:
+      - postgres_dev_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-postgres}"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+
+  # ===========================================================================
+  # IdServer - OIDC/OAuth2 Identity Provider (with hot reload)
+  # ===========================================================================
+  idserver:
+    image: mcr.microsoft.com/dotnet/sdk:10.0
+    container_name: mingo-idserver-dev
+    working_dir: /src
+    volumes:
+      - ../:/src
+    command: >
+      dotnet watch --project src/MinGo.IdServer --no-restore
+    environment:
+      ASPNETCORE_URLS: http://+:5001
+      ASPNETCORE_ENVIRONMENT: Development
+      StorageConfiguration__Type: ${STORAGE_TYPE:-POSTGRE}
+      StorageConfiguration__ConnectionString: Host=postgres;Port=5432;Database=${POSTGRES_DB:-mingo_identity};Username=${POSTGRES_USER:-postgres};Password=${POSTGRES_PASSWORD:-postgres}
+      Authority: ${AUTHORITY:-http://localhost:5001}
+      AdminUiUrl: ${ADMIN_UI_URL:-http://localhost:5002}
+      IsRealmEnabled: ${IS_REALM_ENABLED:-true}
+      IsForwardedEnabled: ${IS_FORWARDED_ENABLED:-false}
+    ports:
+      - "${IDSERVER_PORT:-5001}:5001"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    restart: unless-stopped
+
+  # ===========================================================================
+  # Admin - Blazor Management Dashboard (with hot reload)
+  # ===========================================================================
+  admin:
+    image: mcr.microsoft.com/dotnet/sdk:10.0
+    container_name: mingo-admin-dev
+    working_dir: /src
+    volumes:
+      - ../:/src
+    command: >
+      dotnet watch --project src/MinGo.IdServer.Admin --no-restore
+    environment:
+      ASPNETCORE_URLS: http://+:5002
+      ASPNETCORE_ENVIRONMENT: Development
+      IdserverBaseUrl: ${IDSERVER_BASE_URL:-http://idserver:5001}
+      ClientId: ${ADMIN_CLIENT_ID:-SIDS-manager}
+      ClientSecret: ${ADMIN_CLIENT_SECRET:-password}
+      IsRealmEnabled: ${IS_REALM_ENABLED:-true}
+      IsForwardedEnabled: ${IS_FORWARDED_ENABLED:-false}
+      IgnoreCertificateError: ${IGNORE_CERT_ERROR:-true}
+    ports:
+      - "${ADMIN_PORT:-5002}:5002"
+    depends_on:
+      idserver:
+        condition: service_started
+    restart: unless-stopped
+
+volumes:
+  postgres_dev_data:
+    driver: local
