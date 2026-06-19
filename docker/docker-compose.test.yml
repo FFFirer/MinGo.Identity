@@ -10,6 +10,10 @@
 #
 #   # Stop and cleanup
 #   docker compose -f docker/docker-compose.test.yml down -v
+#
+# Access:
+#   - HTTP:  http://idserver.local:8080, http://admin.local:8080
+#   - HTTPS: https://idserver.local:8443, https://admin.local:8443
 # =============================================================================
 
 services:
@@ -23,8 +27,9 @@ services:
       POSTGRES_USER: ${POSTGRES_USER:-postgres}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
       POSTGRES_DB: ${POSTGRES_DB:-mingo_identity_test}
+    # Random host port to avoid conflicts; use 'docker port mingo-postgres-test 5432' to find it
     ports:
-      - "${PG_PORT:-5433}:5432"
+      - ":5432"
     volumes:
       - postgres_test_data:/var/lib/postgresql/data
     healthcheck:
@@ -33,6 +38,8 @@ services:
       timeout: 5s
       retries: 5
     restart: unless-stopped
+    networks:
+      - mingo-test-network
 
   # ===========================================================================
   # Database Migration (one-shot)
@@ -52,6 +59,8 @@ services:
     depends_on:
       postgres:
         condition: service_healthy
+    networks:
+      - mingo-test-network
     restart: no
 
   # ===========================================================================
@@ -70,12 +79,10 @@ services:
       ASPNETCORE_ENVIRONMENT: Test
       StorageConfiguration__Type: ${STORAGE_TYPE:-POSTGRE}
       StorageConfiguration__ConnectionString: Host=postgres;Port=5432;Database=${POSTGRES_DB:-mingo_identity_test};Username=${POSTGRES_USER:-postgres};Password=${POSTGRES_PASSWORD:-postgres}
-      Authority: ${AUTHORITY:-http://localhost:5001}
-      AdminUiUrl: ${ADMIN_UI_URL:-http://localhost:5002}
+      Authority: ${AUTHORITY:-http://idserver.local:8080}
+      AdminUiUrl: ${ADMIN_UI_URL:-http://admin.local:8080}
       IsRealmEnabled: ${IS_REALM_ENABLED:-true}
-      IsForwardedEnabled: ${IS_FORWARDED_ENABLED:-false}
-    ports:
-      - "${IDSERVER_PORT:-5001}:5001"
+      IsForwardedEnabled: ${IS_FORWARDED_ENABLED:-true}
     depends_on:
       migrate:
         condition: service_completed_successfully
@@ -85,6 +92,8 @@ services:
       timeout: 5s
       retries: 10
       start_period: 30s
+    networks:
+      - mingo-test-network
     restart: unless-stopped
 
   # ===========================================================================
@@ -105,10 +114,8 @@ services:
       ClientId: ${ADMIN_CLIENT_ID:-SIDS-manager}
       ClientSecret: ${ADMIN_CLIENT_SECRET:-password}
       IsRealmEnabled: ${IS_REALM_ENABLED:-true}
-      IsForwardedEnabled: ${IS_FORWARDED_ENABLED:-false}
+      IsForwardedEnabled: ${IS_FORWARDED_ENABLED:-true}
       IgnoreCertificateError: ${IGNORE_CERT_ERROR:-true}
-    ports:
-      - "${ADMIN_PORT:-5002}:5002"
     depends_on:
       idserver:
         condition: service_healthy
@@ -118,7 +125,43 @@ services:
       timeout: 5s
       retries: 10
       start_period: 30s
+    networks:
+      - mingo-test-network
     restart: unless-stopped
+
+  # ===========================================================================
+  # Nginx - Reverse Proxy
+  # ===========================================================================
+  nginx:
+    image: nginx:alpine
+    container_name: mingo-nginx-test
+    ports:
+      - "${HTTP_PORT:-8080}:80"
+      - "${HTTPS_PORT:-8443}:443"
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./nginx/conf.d:/etc/nginx/conf.d:ro
+      - ./nginx/ssl:/etc/nginx/ssl:ro
+    depends_on:
+      idserver:
+        condition: service_healthy
+      admin:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+    networks:
+      - mingo-test-network
+    restart: unless-stopped
+
+networks:
+  mingo-test-network:
+    driver: bridge
+    driver_opts:
+      com.docker.network.bridge.host_mapping_ipv4: "127.0.0.1"
 
 volumes:
   postgres_test_data:

@@ -204,7 +204,7 @@ curl -X POST https://localhost:5001/connect/token \
 ### 启动测试环境
 
 ```powershell
-# 启动测试环境（使用独立的测试数据库）
+# 启动测试环境（使用独立的测试数据库 + Nginx 反向代理）
 docker compose -f docker/docker-compose.test.yml up -d
 
 # 运行测试
@@ -214,11 +214,33 @@ dotnet test
 docker compose -f docker/docker-compose.test.yml down -v
 ```
 
-测试环境特点：
+### 访问测试环境
+
+测试环境使用 Nginx 反向代理，通过域名和标准端口访问：
+
+| 服务 | HTTP | HTTPS |
+|------|------|-------|
+| IdServer | http://idserver.local:8080 | https://idserver.local:8443 |
+| Admin | http://admin.local:8080 | https://admin.local:8443 |
+
+**首次使用需要配置 hosts 文件：**
+
+```bash
+# Windows: C:\Windows\System32\drivers\etc\hosts
+# macOS/Linux: /etc/hosts
+
+127.0.0.1 idserver.local
+127.0.0.1 admin.local
+```
+
+### 测试环境特点
+
 - PostgreSQL 端口：5433（避免与开发环境冲突）
 - 数据库名：`mingo_identity_test`
 - 自动执行数据库迁移
-- 完整的服务栈（PostgreSQL + IdServer + Admin）
+- 完整的服务栈（PostgreSQL + IdServer + Admin + Nginx）
+- 支持 HTTP (8080) 和 HTTPS (8443) 访问
+- 模拟生产环境的反向代理配置
 
 ## 🛠️ 故障排除
 

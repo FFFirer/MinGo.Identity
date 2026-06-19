@@ -489,3 +489,9 @@ $RECYCLE.BIN/
 # Vim temporary swap files
 *.swp
 .opencode/worktree-session-state.json
+.omo/run-continuation/ses_1297ad6cfffeshHIhLONoOhF5o.json
+
+# Nginx SSL certificates (test environment)
+docker/nginx/ssl/*.crt
+docker/nginx/ssl/*.key
+.omo/

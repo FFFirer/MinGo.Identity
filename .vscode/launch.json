@@ -1,0 +1,46 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "MinGo.IdServer",
+            "type": "coreclr",
+            "request": "launch",
+            "preLaunchTask": "build-all",
+            "program": "${workspaceFolder}/src/MinGo.IdServer/bin/Debug/net10.0/MinGo.IdServer.dll",
+            "args": [],
+            "cwd": "${workspaceFolder}/src/MinGo.IdServer",
+            "stopAtEntry": false,
+            "env": {
+                "ASPNETCORE_ENVIRONMENT": "Development"
+            },
+            "serverReadyAction": {
+                "action": "openExternally",
+                "pattern": "\\bNow listening on:\\s+(https?://\\S+)"
+            }
+        },
+        {
+            "name": "MinGo.IdServer.Admin",
+            "type": "coreclr",
+            "request": "launch",
+            "preLaunchTask": "build-all",
+            "program": "${workspaceFolder}/src/MinGo.IdServer.Admin/bin/Debug/net10.0/MinGo.IdServer.Admin.dll",
+            "args": [],
+            "cwd": "${workspaceFolder}/src/MinGo.IdServer.Admin",
+            "stopAtEntry": false,
+            "env": {
+                "ASPNETCORE_ENVIRONMENT": "Development"
+            },
+            "serverReadyAction": {
+                "action": "openExternally",
+                "pattern": "\\bNow listening on:\\s+(https?://\\S+)"
+            }
+        }
+    ],
+    "compounds": [
+        {
+            "name": "IdServer + Admin",
+            "configurations": ["MinGo.IdServer", "MinGo.IdServer.Admin"],
+            "stopAll": true
+        }
+    ]
+}

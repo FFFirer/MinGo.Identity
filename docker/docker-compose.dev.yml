@@ -23,8 +23,9 @@ services:
       POSTGRES_USER: ${POSTGRES_USER:-postgres}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
       POSTGRES_DB: ${POSTGRES_DB:-mingo_identity}
+    # Random host port to avoid conflicts; use 'docker port mingo-postgres-dev 5432' to find it
     ports:
-      - "${PG_PORT:-5432}:5432"
+      - ":5432"
     volumes:
       - postgres_dev_data:/var/lib/postgresql/data
     healthcheck:
