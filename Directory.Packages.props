@@ -146,6 +146,12 @@
     <PackageVersion Include="Serilog.Formatting.Compact" Version="3.0.0" />
   </ItemGroup>
 
+  <!-- ==================== 健康检查数据库客户端 ==================== -->
+  <ItemGroup>
+    <PackageVersion Include="Microsoft.Data.SqlClient" Version="7.0.1" />
+    <PackageVersion Include="StackExchange.Redis" Version="3.0.0" />
+  </ItemGroup>
+
   <!-- ==================== 安全修复（传递依赖固定版本） ==================== -->
   <ItemGroup>
     <PackageVersion Include="Microsoft.Bcl.Memory" Version="10.0.9" />

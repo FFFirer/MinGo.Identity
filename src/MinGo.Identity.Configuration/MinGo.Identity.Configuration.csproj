@@ -10,6 +10,7 @@
 	</PropertyGroup>
 
 	<ItemGroup>
+		<FrameworkReference Include="Microsoft.AspNetCore.App" />
 		<PackageReference Include="Microsoft.Extensions.Diagnostics.HealthChecks" />
 		<PackageReference Include="Microsoft.EntityFrameworkCore" />
 		<PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" />
@@ -19,6 +20,10 @@
 		<PackageReference Include="Microsoft.Extensions.Configuration" />
 		<PackageReference Include="Microsoft.Extensions.Configuration.Binder" />
 		<PackageReference Include="Microsoft.Extensions.Configuration.Json" />
+
+		<!-- 健康检查数据库客户端 -->
+		<PackageReference Include="Microsoft.Data.SqlClient" />
+		<PackageReference Include="StackExchange.Redis" />
 
 		<!-- 覆盖 Microsoft.EntityFrameworkCore.Sqlite 传递依赖的 SQLitePCLRaw 2.x 漏洞包 (GHSA-2m69-gcr7-jv3q) -->
 		<PackageReference Include="SQLitePCLRaw.bundle_e_sqlite3" />

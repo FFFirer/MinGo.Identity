@@ -155,15 +155,10 @@ public class SidServerSetup
         ConfigureDistributedCache(webApplicationBuilder);
 
         // ────────────────────────────────────────────────────────────
-        // Health checks
+        // Health checks — config-driven, auto-registers checks for
+        // configured storage, key-value store, and message broker.
         // ────────────────────────────────────────────────────────────
-        var storageSection = webApplicationBuilder.Configuration.GetSection(nameof(StorageConfiguration));
-        var storageConf = storageSection.Get<StorageConfiguration>() ?? new StorageConfiguration();
-        var healthBuilder = webApplicationBuilder.Services.AddIdentityHealthChecks();
-        if (storageConf.Type == StorageTypes.POSTGRE || storageConf.Type == StorageTypes.SQLSERVER)
-        {
-            healthBuilder.AddPostgreSqlReadinessCheck(storageConf.ConnectionString);
-        }
+        webApplicationBuilder.Services.AddIdentityHealthChecks(webApplicationBuilder.Configuration);
 
         // Seed 数据迁移至 MinGo.Identity.Migrator，部署时统一执行
     }

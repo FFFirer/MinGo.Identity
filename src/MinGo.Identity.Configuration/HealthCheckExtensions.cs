@@ -1,146 +1,104 @@
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Diagnostics.HealthChecks;
+using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
-using Npgsql;
 
 namespace MinGo.Identity.Configuration;
 
 /// <summary>
 /// Extension methods for adding identity-service health checks with
 /// Kubernetes-aligned probe endpoints (/healthz, /readyz, /startupz).
+///
+/// Reads application configuration to automatically register checks for
+/// configured dependencies (database, key-value store, message broker).
 /// </summary>
 public static class HealthCheckExtensions
 {
     /// <summary>
-    /// Register the base health check services.
+    /// Register health check services and automatically add checks for
+    /// configured external dependencies.
+    ///
+    /// IdServer (reads StorageConfiguration, KeyValueConfiguration, MessageBrokerOptions):
+    ///   - Database           → DatabaseHealthCheck (tag: ready)
+    ///   - Key-Value Store    → KeyValueStoreHealthCheck (tag: ready, Redis only)
+    ///   - Message Broker     → MessageBrokerHealthCheck (tag: ready, external transport only)
+    ///
+    /// Admin (reads IdentityServerAdminConfiguration):
+    ///   - IdServer OIDC      → IdServerEndpointCheck (tag: ready)
+    ///   - SCIM Endpoint      → ScimEndpointCheck (tag: ready, optional)
     /// </summary>
-    public static IHealthChecksBuilder AddIdentityHealthChecks(
-        this IServiceCollection services)
+    public static IServiceCollection AddIdentityHealthChecks(
+        this IServiceCollection services,
+        IConfiguration configuration)
     {
-        return services.AddHealthChecks();
-    }
+        var builder = services.AddHealthChecks();
 
-    /// <summary>
-    /// Add a readiness check that opens a connection to the PostgreSQL
-    /// database specified by <paramref name="connectionString"/>.
-    /// </summary>
-    public static IHealthChecksBuilder AddPostgreSqlReadinessCheck(
-        this IHealthChecksBuilder builder,
-        string connectionString)
-    {
-        return builder.AddTypeActivatedHealthCheck<PostgreSqlHealthCheck>(
-            "postgresql",
-            HealthStatus.Unhealthy,
-            ["ready", "postgresql"],
-            connectionString);
-    }
-
-    /// <summary>
-    /// Add a readiness check that verifies the IdServer OIDC discovery
-    /// endpoint is reachable.
-    /// </summary>
-    public static IHealthChecksBuilder AddIdServerEndpointCheck(
-        this IHealthChecksBuilder builder,
-        string idserverBaseUrl)
-    {
-        return builder.AddTypeActivatedHealthCheck<IdServerHealthCheck>(
-            "idserver-oidc",
-            HealthStatus.Unhealthy,
-            ["ready", "idserver"],
-            idserverBaseUrl);
-    }
-}
-
-// ────────────────────────────────────────────────────────────────
-// Custom health check implementations
-// ────────────────────────────────────────────────────────────────
-
-/// <summary>
-/// Health check that validates PostgreSQL connectivity by opening and
-/// closing a raw Npgsql connection.
-/// </summary>
-internal sealed class PostgreSqlHealthCheck(string connectionString) : IHealthCheck
-{
-    public async Task<HealthCheckResult> CheckHealthAsync(
-        HealthCheckContext context,
-        CancellationToken cancellationToken = default)
-    {
-        try
+        // ── Database check (IdServer) ──────────────────────────────
+        var storageType = configuration["StorageConfiguration:Type"] ?? "INMEMORY";
+        if (storageType is not "INMEMORY" and not "0")
         {
-            await using var conn = new NpgsqlConnection(connectionString);
-            await conn.OpenAsync(cancellationToken);
-            return HealthCheckResult.Healthy("PostgreSQL is reachable.");
+            builder.AddCheck<DatabaseHealthCheck>("database", HealthStatus.Unhealthy, ["ready"]);
         }
-        catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
-        {
-            return HealthCheckResult.Healthy("Check cancelled (assumes healthy).");
-        }
-        catch (Exception ex)
-        {
-            return HealthCheckResult.Unhealthy(
-                "PostgreSQL is unreachable.",
-                ex);
-        }
-    }
-}
 
-/// <summary>
-/// Health check that verifies the IdServer OIDC discovery endpoint
-/// is reachable by issuing an HTTP GET request.
-/// </summary>
-internal sealed class IdServerHealthCheck(string idserverBaseUrl) : IHealthCheck
-{
-    private static readonly HttpClient _httpClient = new()
-    {
-        Timeout = TimeSpan.FromSeconds(5)
-    };
-
-    public async Task<HealthCheckResult> CheckHealthAsync(
-        HealthCheckContext context,
-        CancellationToken cancellationToken = default)
-    {
-        try
+        // ── Key-Value store check (IdServer, Redis only) ───────────
+        var kvType = configuration["KeyValueConfiguration:Type"] ?? "INMEMORY";
+        if (kvType is "REDIS" or "1")
         {
-            var url = $"{idserverBaseUrl.TrimEnd('/')}/.well-known/openid-configuration";
-            var response = await _httpClient.GetAsync(url, cancellationToken);
-            if (response.IsSuccessStatusCode)
+            builder.AddCheck<KeyValueStoreHealthCheck>("keyvault", HealthStatus.Unhealthy, ["ready"]);
+        }
+
+        // ── Message broker check (IdServer, external transport) ────
+        var brokerTransport = configuration["MessageBrokerOptions:Transport"] ?? "INMEMORY";
+        if (brokerTransport is "SQLSERVER" or "1")
+        {
+            builder.AddCheck<MessageBrokerHealthCheck>("messagebroker", HealthStatus.Unhealthy, ["ready"]);
+        }
+
+        // ── Admin checks ───────────────────────────────────────────
+        var idserverBaseUrl = configuration["IdentityServerAdminConfiguration:IdserverBaseUrl"];
+        if (!string.IsNullOrEmpty(idserverBaseUrl))
+        {
+            builder.AddCheck<IdServerEndpointCheck>("idserver-oidc", HealthStatus.Unhealthy, ["ready"]);
+
+            var scimBaseUrl = configuration["IdentityServerAdminConfiguration:ScimBaseUrl"];
+            if (!string.IsNullOrEmpty(scimBaseUrl))
             {
-                return HealthCheckResult.Healthy("IdServer OIDC endpoint is reachable.");
+                builder.AddCheck<ScimEndpointCheck>("scim", HealthStatus.Degraded, ["ready"]);
             }
+        }
 
-            return HealthCheckResult.Unhealthy(
-                $"IdServer returned HTTP {(int)response.StatusCode}.");
-        }
-        catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
-        {
-            return HealthCheckResult.Healthy("Check cancelled (assumes healthy).");
-        }
-        catch (Exception ex)
-        {
-            return HealthCheckResult.Unhealthy(
-                "IdServer OIDC endpoint is unreachable.",
-                ex);
-        }
+        return services;
     }
-}
 
-// ────────────────────────────────────────────────────────────────
-// Helper for type-activated health check registration
-// ────────────────────────────────────────────────────────────────
-
-internal static class HealthCheckRegistrationHelper
-{
-    public static IHealthChecksBuilder AddTypeActivatedHealthCheck<TCheck>(
-        this IHealthChecksBuilder builder,
-        string name,
-        HealthStatus failureStatus,
-        IEnumerable<string>? tags,
-        params object[] args)
-        where TCheck : class, IHealthCheck
+    /// <summary>
+    /// Map Kubernetes-aligned health check endpoints.
+    ///
+    ///   /healthz   — Liveness: always 200 (process is alive)
+    ///   /readyz    — Readiness: passes only when all dependencies tagged "ready" are healthy
+    ///   /startupz  — Startup: always 200 after startup completes
+    /// </summary>
+    public static WebApplication MapIdentityHealthChecks(this WebApplication app)
     {
-        return builder.Add(new HealthCheckRegistration(
-            name,
-            sp => ActivatorUtilities.CreateInstance<TCheck>(sp, args),
-            failureStatus,
-            tags));
+        app.MapHealthChecks("/healthz", new HealthCheckOptions
+        {
+            Predicate = _ => false,
+            AllowCachingResponses = false,
+            ResponseWriter = HealthCheckResponseWriters.WriteJson
+        });
+        app.MapHealthChecks("/readyz", new HealthCheckOptions
+        {
+            Predicate = check => check.Tags.Contains("ready"),
+            AllowCachingResponses = false,
+            ResponseWriter = HealthCheckResponseWriters.WriteJson
+        });
+        app.MapHealthChecks("/startupz", new HealthCheckOptions
+        {
+            Predicate = _ => false,
+            AllowCachingResponses = false,
+            ResponseWriter = HealthCheckResponseWriters.WriteJson
+        });
+        return app;
     }
 }

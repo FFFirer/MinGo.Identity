@@ -1,15 +1,12 @@
 ﻿// Copyright (c) SimpleIdServer. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See LICENSE in the project root for license information.
-using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Diagnostics.HealthChecks;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
 using Serilog;
 using MinGo.IdServer;
 using MinGo.IdServer.Conf;
+using MinGo.Identity.Configuration;
 
 var webApplicationBuilder = WebApplication.CreateBuilder(args);
 
@@ -50,21 +47,7 @@ var app = webApplicationBuilder.Build();
 // Mapped before business middleware so they remain accessible even
 // when other middleware is degraded.
 // ────────────────────────────────────────────────────────────────
-app.MapHealthChecks("/healthz", new HealthCheckOptions
-{
-    Predicate = _ => false,             // No checks — always healthy
-    AllowCachingResponses = false
-});
-app.MapHealthChecks("/readyz", new HealthCheckOptions
-{
-    Predicate = check => check.Tags.Contains("ready"),
-    AllowCachingResponses = false
-});
-app.MapHealthChecks("/startupz", new HealthCheckOptions
-{
-    Predicate = _ => false,             // No checks — marks startup complete
-    AllowCachingResponses = false
-});
+app.MapIdentityHealthChecks();
 
 // Seed 数据迁移至 MinGo.Identity.Migrator，部署时统一执行
 app.UseCors("AllowAll");
