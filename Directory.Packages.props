@@ -149,6 +149,8 @@
   <ItemGroup>
     <PackageVersion Include="Microsoft.Bcl.Memory" Version="10.0.9" />
     <PackageVersion Include="System.Security.Cryptography.Xml" Version="10.0.9" />
+    <!-- SQLitePCLRaw 2.x 已废弃且有漏洞 GHSA-2m69-gcr7-jv3q，3.x 改用 SourceGear.sqlite3 -->
+    <PackageVersion Include="SQLitePCLRaw.bundle_e_sqlite3" Version="3.0.3" />
   </ItemGroup>
 
   <!-- ==================== 测试（预留） ==================== -->

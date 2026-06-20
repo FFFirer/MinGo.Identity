@@ -19,5 +19,8 @@
 		<PackageReference Include="Microsoft.Extensions.Configuration" />
 		<PackageReference Include="Microsoft.Extensions.Configuration.Binder" />
 		<PackageReference Include="Microsoft.Extensions.Configuration.Json" />
+
+		<!-- 覆盖 Microsoft.EntityFrameworkCore.Sqlite 传递依赖的 SQLitePCLRaw 2.x 漏洞包 (GHSA-2m69-gcr7-jv3q) -->
+		<PackageReference Include="SQLitePCLRaw.bundle_e_sqlite3" />
 	</ItemGroup>
 </Project>
