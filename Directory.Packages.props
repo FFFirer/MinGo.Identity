@@ -6,6 +6,14 @@
     <CentralPackageTransitivePinningEnabled>true</CentralPackageTransitivePinningEnabled>
   </PropertyGroup>
 
+  <!-- ==================== Fluxor 状态管理（覆盖 SimpleIdServer 传递依赖的 6.1.0） ==================== -->
+  <ItemGroup>
+    <!-- 升级到 6.9.0 以支持 .NET 10 并修复 ReduxDevTools NullReferenceException（#543） -->
+    <PackageVersion Include="Fluxor" Version="6.9.0" />
+    <PackageVersion Include="Fluxor.Blazor.Web" Version="6.9.0" />
+    <PackageVersion Include="Fluxor.Blazor.Web.ReduxDevTools" Version="6.9.0" />
+  </ItemGroup>
+
   <!-- ==================== SimpleIdServer Ecosystem (7.0.0) ==================== -->
   <ItemGroup>
     <!-- 核心 -->
@@ -32,7 +40,7 @@
     <!-- 存储迁移 -->
     <PackageVersion Include="SimpleIdServer.IdServer.PostgreMigrations" Version="7.0.0" />
     <PackageVersion Include="SimpleIdServer.IdServer.SqlServerMigrations" Version="7.0.0" />
-    <!-- <PackageVersion Include="SimpleIdServer.IdServer.MySQLMigrations" Version="7.0.0" /> -->
+    <PackageVersion Include="SimpleIdServer.IdServer.MySQLMigrations" Version="7.0.0" />
     <PackageVersion Include="SimpleIdServer.IdServer.SqliteMigrations" Version="7.0.0" />
 
     <!-- 外部身份源 -->
@@ -55,7 +63,7 @@
     <PackageVersion Include="SidFormBuilder.Tailwindcss" Version="7.0.0" />
     <PackageVersion Include="SidFormBuilder.PostgreMigrations" Version="7.0.0" />
     <PackageVersion Include="SidFormBuilder.SqlServerMigrations" Version="7.0.0" />
-    <!-- <PackageVersion Include="SidFormBuilder.MySQLMigrations" Version="7.0.0" /> -->
+    <PackageVersion Include="SidFormBuilder.MySQLMigrations" Version="7.0.0" />
     <PackageVersion Include="SidFormBuilder.SqliteMigrations" Version="7.0.0" />
   </ItemGroup>
 
@@ -78,6 +86,7 @@
 
   <!-- ==================== PostgreSQL ==================== -->
   <ItemGroup>
+    <PackageVersion Include="Pomelo.EntityFrameworkCore.MySql" Version="9.0.0" />
     <PackageVersion Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="10.0.2" />
     <PackageVersion Include="Npgsql" Version="10.0.3" />
   </ItemGroup>
@@ -88,13 +97,14 @@
     <PackageVersion Include="Microsoft.Extensions.Caching.SqlServer" Version="10.0.9" />
     <PackageVersion Include="Microsoft.Extensions.Caching.StackExchangeRedis" Version="10.0.9" />
     <PackageVersion Include="NeoSmart.Caching.Sqlite.AspNetCore" Version="9.0.1" />
-    <!-- <PackageVersion Include="Pomelo.Extensions.Caching.MySql" Version="2.2.1" /> -->
+    <PackageVersion Include="Pomelo.Extensions.Caching.MySql" Version="2.2.1" />
   </ItemGroup>
 
   <!-- ==================== 后台任务（Hangfire） ==================== -->
   <ItemGroup>
     <PackageVersion Include="Hangfire.AspNetCore" Version="1.8.23" />
     <PackageVersion Include="Hangfire.NetCore" Version="1.8.23" />
+    <PackageVersion Include="Hangfire.MySqlStorage" Version="2.0.3" />
     <PackageVersion Include="Hangfire.PostgreSql" Version="1.21.1" />
     <PackageVersion Include="Hangfire.SqlServer" Version="1.8.23" />
     <PackageVersion Include="Hangfire.SQLite" Version="1.4.2" />

@@ -85,8 +85,9 @@ if (!app.Environment.IsDevelopment())
 
 app.UseIdserverAdmin();
 app.UseHttpsRedirection();
-app.UseAntiforgery();
+
 app.UseRouting();
+app.UseAntiforgery();
 
 // ────────────────────────────────────────────────────────────────
 // Health check probes (K8s style)
