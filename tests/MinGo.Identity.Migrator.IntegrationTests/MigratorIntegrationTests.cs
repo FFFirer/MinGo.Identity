@@ -38,7 +38,7 @@ public class MigratorIntegrationTests : IClassFixture<DbFixture>
         }
 
         Assert.Equal(0, exitCode);
-        Assert.Contains("All operations completed successfully", stdOut);
+        Assert.Contains("Migration and seeding completed successfully", stdOut);
     }
 
     [Fact]
@@ -282,7 +282,7 @@ public class MigratorIntegrationTests : IClassFixture<DbFixture>
         }
 
         Assert.Equal(0, exitCode);
-        Assert.Contains("All operations completed successfully", stdOut);
+        Assert.Contains("Migration and seeding completed successfully", stdOut);
     }
 
     // ============================================================
@@ -291,66 +291,37 @@ public class MigratorIntegrationTests : IClassFixture<DbFixture>
 
     private async Task<(int, string, string)> RunMigrateAsync()
     {
-        var stdOut = new StringWriter();
-        var stdErr = new StringWriter();
-        var originalOut = Console.Out;
-        var originalError = Console.Error;
-
-        try
+        var migratorProject = FindMigratorProjectPath();
+        var envVars = new Dictionary<string, string>
         {
-            Console.SetOut(stdOut);
-            Console.SetError(stdErr);
-
-            var service = CreateMigratorService();
-            await service.RunMigrationsAsync();
-
-            return (0, stdOut.ToString(), stdErr.ToString());
-        }
-        catch (Exception ex)
-        {
-            await stdErr.WriteLineAsync(ex.ToString());
-            return (1, stdOut.ToString(), stdErr.ToString());
-        }
-        finally
-        {
-            Console.SetOut(originalOut);
-            Console.SetError(originalError);
-        }
+            ["StorageConfiguration__ConnectionString"] = _fixture.ConnectionString,
+            ["StorageConfiguration__Type"] = "POSTGRE"
+        };
+        return await RunProcessAsync(
+            "dotnet",
+            $"run --project \"{migratorProject}\" -- migrate",
+            Path.GetDirectoryName(migratorProject)!,
+            envVars
+        );
     }
 
     private async Task<(int, string, string)> RunScriptAsync(string? outputFile = null)
     {
-        var stdOut = new StringWriter();
-        var stdErr = new StringWriter();
-        var originalOut = Console.Out;
-        var originalError = Console.Error;
-
-        try
+        var migratorProject = FindMigratorProjectPath();
+        var args = outputFile != null
+            ? $"run --project \"{migratorProject}\" -- script --output \"{outputFile}\""
+            : $"run --project \"{migratorProject}\" -- script";
+        var envVars = new Dictionary<string, string>
         {
-            Console.SetOut(stdOut);
-            Console.SetError(stdErr);
-
-            var service = CreateMigratorService();
-            var outputInfo = outputFile != null ? new FileInfo(outputFile) : null;
-            await service.GenerateScriptAsync(outputInfo);
-
-            return (0, stdOut.ToString(), stdErr.ToString());
-        }
-        catch (Exception ex)
-        {
-            await stdErr.WriteLineAsync(ex.ToString());
-            return (1, stdOut.ToString(), stdErr.ToString());
-        }
-        finally
-        {
-            Console.SetOut(originalOut);
-            Console.SetError(originalError);
-        }
-    }
-
-    private MigratorService CreateMigratorService()
-    {
-        return new MigratorService(_fixture.StorageConfiguration);
+            ["StorageConfiguration__ConnectionString"] = _fixture.ConnectionString,
+            ["StorageConfiguration__Type"] = "POSTGRE"
+        };
+        return await RunProcessAsync(
+            "dotnet",
+            args,
+            Path.GetDirectoryName(migratorProject)!,
+            envVars
+        );
     }
 
     private static async Task<(int, string, string)> RunProcessAsync(
