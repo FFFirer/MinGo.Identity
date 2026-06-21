@@ -73,7 +73,7 @@ services:
     volumes:
       - ../:/src
     command: >
-      dotnet run --project src/MinGo.IdServer
+      dotnet run --project src/MinGo.IdServer --no-launch-profile
     environment:
       ASPNETCORE_URLS: http://+:5001
       ASPNETCORE_ENVIRONMENT: Test
@@ -106,7 +106,7 @@ services:
     volumes:
       - ../:/src
     command: >
-      dotnet run --project src/MinGo.IdServer.Admin
+      dotnet run --project src/MinGo.IdServer.Admin --no-launch-profile
     environment:
       ASPNETCORE_URLS: http://+:5002
       ASPNETCORE_ENVIRONMENT: Test

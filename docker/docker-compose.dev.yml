@@ -36,6 +36,29 @@ services:
     restart: unless-stopped
 
   # ===========================================================================
+  # Migrator - Database migrations & seed data (runs once, then exits)
+  # ===========================================================================
+  migrator:
+    image: mcr.microsoft.com/dotnet/sdk:10.0
+    container_name: mingo-migrator-dev
+    working_dir: /src
+    volumes:
+      - ../:/src
+    command: >
+      dotnet run --project src/MinGo.Identity.Migrator --no-restore -- migrate
+    environment:
+      ASPNETCORE_ENVIRONMENT: Development
+      StorageConfiguration__Type: ${STORAGE_TYPE:-POSTGRE}
+      StorageConfiguration__ConnectionString: Host=postgres;Port=5432;Database=${POSTGRES_DB:-mingo_identity};Username=${POSTGRES_USER:-postgres};Password=${POSTGRES_PASSWORD:-postgres}
+      Authority: ${AUTHORITY:-http://localhost:5001}
+      AdminUiUrl: ${ADMIN_UI_URL:-http://localhost:5002}
+      IsRealmEnabled: ${IS_REALM_ENABLED:-true}
+      IsForwardedEnabled: ${IS_FORWARDED_ENABLED:-false}
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  # ===========================================================================
   # IdServer - OIDC/OAuth2 Identity Provider (with hot reload)
   # ===========================================================================
   idserver:
@@ -58,6 +81,8 @@ services:
     ports:
       - "${IDSERVER_PORT:-5001}:5001"
     depends_on:
+      migrator:
+        condition: service_completed_successfully
       postgres:
         condition: service_healthy
     restart: unless-stopped
