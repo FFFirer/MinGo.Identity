@@ -23,6 +23,9 @@ using MinGo.IdServer.Configurations;
 using MinGo.Identity.Configuration;
 using MinGo.IdServer.Consumers;
 using SimpleIdServer.IdServer.TokenTypes;
+using DataSeeder;
+using MinGo.IdServer.Conf.Migrations.AfterDeployment;
+using MinGo.IdServer.Conf.Migrations.BeforeDeployment;
 using System;
 using System.Collections.Generic;
 using System.Security.Cryptography.X509Certificates;
@@ -112,8 +115,8 @@ public class SidServerSetup
                 ConfigureMessageBroker(webApplicationBuilder, o);
             }, () => ConfigureMessageBrokerMigration(webApplicationBuilder))
             .SeedAdministrationData(
-                new List<string> { },
-                new List<string> { },
+                new List<string> { $"{configuration.AdminUiUrl}/signout-callback-oidc" },
+                new List<string> { $"{configuration.AdminUiUrl}/signout-callback-oidc" },
                 string.Empty,
                 new List<Scope>())
             .SeedSwagger(
@@ -160,7 +163,11 @@ public class SidServerSetup
         // ────────────────────────────────────────────────────────────
         webApplicationBuilder.Services.AddIdentityHealthChecks(webApplicationBuilder.Configuration);
 
-        // Seed 数据迁移至 MinGo.Identity.Migrator，部署时统一执行
+        // ────────────────────────────────────────────────────────────
+        // After-deployment seeder — 补全 SIDS-manager redirect URL 等
+        // 由 MinGo.Identity.Migrator 统一执行 SeedData() 时调用
+        // ────────────────────────────────────────────────────────────
+        ConfigureDataseeder(webApplicationBuilder, configuration);
     }
 
     private static void ConfigureDuendeMigration(WebApplicationBuilder builder, DbContextOptionsBuilder db)
@@ -427,4 +434,22 @@ public class SidServerSetup
         }
     }
 
+    private static void ConfigureDataseeder(WebApplicationBuilder builder, IdentityServerConfiguration config)
+    {
+        // BeforeDeployment — 在迁移后立即执行
+        builder.Services.AddTransient<IDataSeeder, DropDistributedCacheDataSeeder>();
+        builder.Services.AddTransient<IDataSeeder, ClientTypeDataSeeder>();
+
+        // AfterDeployment — 在种子数据后执行
+        builder.Services.AddTransient<IDataSeeder, ConfigureAuthSchemeProviderDataSeeder>();
+        builder.Services.AddTransient<IDataSeeder, ConfigureCredentialIssuerDataSeeder>();
+        builder.Services.AddTransient<IDataSeeder, ConfigureFastfedDataSeeder>();
+        builder.Services.AddTransient<IDataSeeder, ConfigureGotifyDataseeder>();
+        builder.Services.AddTransient<IDataSeeder, ConfigureFederationDataseeder>();
+        builder.Services.AddTransient<IDataSeeder, ConfigureAdminWebsiteRedirectUrlsDataSeeder>();
+        builder.Services.AddTransient<IDataSeeder, ConfigureSwaggerClientRedirectUrlsDataSeeder>();
+
+        // 自定义 — 额外扩展
+        builder.Services.AddTransient<IDataSeeder, ConfigureAdminUserDataSeeder>();
+    }
 }

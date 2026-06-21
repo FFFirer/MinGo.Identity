@@ -20,6 +20,7 @@
 		<ProjectReference
 			Include="..\MinGo.Identity.Configuration\MinGo.Identity.Configuration.csproj" />
 		<ProjectReference Include="..\MinGo.Identity.Migrations\MinGo.Identity.Migrations.csproj" />
+		<ProjectReference Include="..\MinGo.IdServer\MinGo.IdServer.csproj" />
 	</ItemGroup>
 
 	<ItemGroup>
