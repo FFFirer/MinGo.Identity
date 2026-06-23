@@ -68,7 +68,7 @@ adminBuilder.UpdateOpenid(idserverAdminConfiguration.ClientId, idserverAdminConf
 // Health checks — config-driven, auto-registers IdServer OIDC
 // and SCIM endpoint checks from IdentityServerAdminConfiguration.
 // ────────────────────────────────────────────────────────────────
-builder.Services.AddIdentityHealthChecks(builder.Configuration);
+builder.Services.AddIdentityHealthChecks(builder.Configuration, includeIdServerCheck: false);
 
 var app = builder.Build();
 
@@ -92,7 +92,7 @@ app.UseAntiforgery();
 // ────────────────────────────────────────────────────────────────
 // Health check probes (K8s style)
 // ────────────────────────────────────────────────────────────────
-// app.MapIdentityHealthChecks();
+app.MapIdentityHealthChecks();
 
 app.MapRazorComponents<App>()
     .AddInteractiveServerRenderMode();

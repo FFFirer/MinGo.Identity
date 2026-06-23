@@ -31,7 +31,8 @@ public static class HealthCheckExtensions
     /// </summary>
     public static IServiceCollection AddIdentityHealthChecks(
         this IServiceCollection services,
-        IConfiguration configuration)
+        IConfiguration configuration,
+        bool includeIdServerCheck = true)
     {
         var builder = services.AddHealthChecks();
 
@@ -60,7 +61,10 @@ public static class HealthCheckExtensions
         var idserverBaseUrl = configuration["IdentityServerAdminConfiguration:IdserverBaseUrl"];
         if (!string.IsNullOrEmpty(idserverBaseUrl))
         {
-            builder.AddCheck<IdServerEndpointCheck>("idserver-oidc", HealthStatus.Unhealthy, ["ready"]);
+            if (includeIdServerCheck)
+            {
+                builder.AddCheck<IdServerEndpointCheck>("idserver-oidc", HealthStatus.Unhealthy, ["ready"]);
+            }
 
             var scimBaseUrl = configuration["IdentityServerAdminConfiguration:ScimBaseUrl"];
             if (!string.IsNullOrEmpty(scimBaseUrl))
