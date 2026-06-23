@@ -16,9 +16,9 @@
 		<PackageReference Include="SimpleIdServer.IdServer.Website.OpenTelemetry" />
 
 		<!-- Fluxor 6.9.0: 覆盖 SimpleIdServer 传递依赖的 6.1.0，修复 .NET 10 兼容性和 ReduxDevTools NRE -->
-		<PackageReference Include="Fluxor" />
-		<PackageReference Include="Fluxor.Blazor.Web" />
-		<PackageReference Include="Fluxor.Blazor.Web.ReduxDevTools" />
+		<!-- <PackageReference Include="Fluxor" /> -->
+		<!-- <PackageReference Include="Fluxor.Blazor.Web" /> -->
+		<!-- <PackageReference Include="Fluxor.Blazor.Web.ReduxDevTools" /> -->
 
 		<!-- LibMan 前端库管理 — 取消注释以启用
 		<PackageReference Include="Microsoft.Web.LibraryManager.Build" />

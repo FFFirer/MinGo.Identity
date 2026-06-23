@@ -9,9 +9,9 @@
   <!-- ==================== Fluxor 状态管理（覆盖 SimpleIdServer 传递依赖的 6.1.0） ==================== -->
   <ItemGroup>
     <!-- 升级到 6.9.0 以支持 .NET 10 并修复 ReduxDevTools NullReferenceException（#543） -->
-    <PackageVersion Include="Fluxor" Version="6.9.0" />
-    <PackageVersion Include="Fluxor.Blazor.Web" Version="6.9.0" />
-    <PackageVersion Include="Fluxor.Blazor.Web.ReduxDevTools" Version="6.9.0" />
+    <!-- <PackageVersion Include="Fluxor" Version="6.9.0" /> -->
+    <!-- <PackageVersion Include="Fluxor.Blazor.Web" Version="6.9.0" /> -->
+    <!-- <PackageVersion Include="Fluxor.Blazor.Web.ReduxDevTools" Version="6.9.0" /> -->
   </ItemGroup>
 
   <!-- ==================== SimpleIdServer Ecosystem (7.0.0) ==================== -->
@@ -69,13 +69,13 @@
 
   <!-- ==================== Entity Framework Core ==================== -->
   <ItemGroup>
-    <PackageVersion Include="Microsoft.EntityFrameworkCore" Version="10.0.9" />
-    <PackageVersion Include="Microsoft.EntityFrameworkCore.Design" Version="10.0.9" />
-    <PackageVersion Include="Microsoft.EntityFrameworkCore.Tools" Version="10.0.9" />
-    <PackageVersion Include="Microsoft.EntityFrameworkCore.SqlServer" Version="10.0.9" />
-    <PackageVersion Include="Microsoft.EntityFrameworkCore.InMemory" Version="10.0.9" />
-    <PackageVersion Include="Microsoft.EntityFrameworkCore.Relational" Version="10.0.9" />
-    <PackageVersion Include="Microsoft.EntityFrameworkCore.Sqlite" Version="10.0.9" />
+    <PackageVersion Include="Microsoft.EntityFrameworkCore" Version="9.0.17" />
+    <PackageVersion Include="Microsoft.EntityFrameworkCore.Design" Version="9.0.17" />
+    <PackageVersion Include="Microsoft.EntityFrameworkCore.Tools" Version="9.0.17" />
+    <PackageVersion Include="Microsoft.EntityFrameworkCore.SqlServer" Version="9.0.17" />
+    <PackageVersion Include="Microsoft.EntityFrameworkCore.InMemory" Version="9.0.17" />
+    <PackageVersion Include="Microsoft.EntityFrameworkCore.Relational" Version="9.0.17" />
+    <PackageVersion Include="Microsoft.EntityFrameworkCore.Sqlite" Version="9.0.17" />
     <PackageVersion Include="Microsoft.Extensions.Configuration" Version="10.0.9" />
     <PackageVersion Include="Microsoft.Extensions.Configuration.Binder" Version="10.0.9" />
     <PackageVersion Include="Microsoft.Extensions.Configuration.Json" Version="10.0.9" />
@@ -87,7 +87,7 @@
   <!-- ==================== PostgreSQL ==================== -->
   <ItemGroup>
     <PackageVersion Include="Pomelo.EntityFrameworkCore.MySql" Version="9.0.0" />
-    <PackageVersion Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="10.0.2" />
+    <PackageVersion Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="9.0.4" />
     <PackageVersion Include="Npgsql" Version="10.0.3" />
   </ItemGroup>
 
@@ -168,6 +168,8 @@
     <PackageVersion Include="System.Security.Cryptography.Xml" Version="10.0.9" />
     <!-- SQLitePCLRaw 2.x 已废弃且有漏洞 GHSA-2m69-gcr7-jv3q，3.x 改用 SourceGear.sqlite3 -->
     <PackageVersion Include="SQLitePCLRaw.bundle_e_sqlite3" Version="3.0.3" />
+    <!-- 覆盖 NeoSmart.Caching.Sqlite.AspNetCore 传递依赖的 SQLitePCLRaw.bundle_green 2.1.10（含漏洞），2.1.11 升级到 SQLite 3.49.1 -->
+    <PackageVersion Include="SQLitePCLRaw.bundle_green" Version="2.1.11" />
   </ItemGroup>
 
   <!-- ==================== 测试（预留） ==================== -->

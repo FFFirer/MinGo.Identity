@@ -57,6 +57,7 @@ public class SidServerSetup
             {
                 c.AddTailwindcss();
             })
+            .EnableMigration()
             // 注意：迁移现由 MinGo.Identity.Migrator 独立管理
             // 多节点部署时通过部署流水线执行，非启动时自动执行
             .AddDuendeMigration(a =>
@@ -67,7 +68,6 @@ public class SidServerSetup
             {
                 ConfigureOpeniddictMigration(webApplicationBuilder, a);
             })
-            .EnableMigration()
             .AddPwdAuthentication(true)
             .AddEmailAuthentication()
             .AddOtpAuthentication()

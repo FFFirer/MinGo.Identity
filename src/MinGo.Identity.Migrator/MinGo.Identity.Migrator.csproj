@@ -7,9 +7,6 @@
 		<Nullable>enable</Nullable>
 		<RootNamespace>MinGo.Identity.Migrator</RootNamespace>
 		<AssemblyName>MinGo.Identity.Migrator</AssemblyName>
-		<!-- Suppress NU1608: Pomelo.EntityFrameworkCore.MySql 8.0.2 (transitive from SidFormBuilder) 
-		     conflicts with EF Core 10.x. Known issue - unfixable until Pomelo 10.x is released. -->
-		<NoWarn>NU1608</NoWarn>
 	</PropertyGroup>
 
 	<ItemGroup>

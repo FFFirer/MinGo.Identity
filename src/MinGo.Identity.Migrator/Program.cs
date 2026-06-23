@@ -30,6 +30,7 @@ migrateCommand.SetHandler(async () =>
     // 1. Build DI container (identical to IdServer via SidServerSetup)
     var builder = WebApplication.CreateBuilder();
     builder.Configuration
+        .SetBasePath(AppContext.BaseDirectory)
         .AddJsonFile("appsettings.json", optional: false)
         .AddJsonFile($"appsettings.{builder.Environment.EnvironmentName}.json", optional: true)
         .AddEnvironmentVariables();
