@@ -36,18 +36,21 @@ services:
     restart: unless-stopped
 
   # ===========================================================================
+  # Build and push Docker images first (optional, auto-builds on up):
+  #   docker compose -f docker/docker-compose.dev.yml build
+  # ===========================================================================
+
+  # ===========================================================================
   # Migrator - Database migrations & seed data (runs once, then exits)
   # ===========================================================================
   migrator:
-    image: mcr.microsoft.com/dotnet/sdk:10.0
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile.migrator
+    image: mingo-identity-migrator:dev
     container_name: mingo-migrator-dev
-    working_dir: /src
-    volumes:
-      - ../:/src
-    command: >
-      dotnet run --project src/MinGo.Identity.Migrator --no-restore -- migrate
     environment:
-      ASPNETCORE_ENVIRONMENT: Development
+      DOTNET_ENVIRONMENT: Development
       StorageConfiguration__Type: ${STORAGE_TYPE:-POSTGRE}
       StorageConfiguration__ConnectionString: Host=postgres;Port=5432;Database=${POSTGRES_DB:-mingo_identity};Username=${POSTGRES_USER:-postgres};Password=${POSTGRES_PASSWORD:-postgres}
       Authority: ${AUTHORITY:-http://localhost:5001}
@@ -59,16 +62,14 @@ services:
         condition: service_healthy
 
   # ===========================================================================
-  # IdServer - OIDC/OAuth2 Identity Provider (with hot reload)
+  # IdServer - OIDC/OAuth2 Identity Provider
   # ===========================================================================
   idserver:
-    image: mcr.microsoft.com/dotnet/sdk:10.0
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile.idserver
+    image: mingo-identity-idserver:dev
     container_name: mingo-idserver-dev
-    working_dir: /src
-    volumes:
-      - ../:/src
-    command: >
-      dotnet watch --project src/MinGo.IdServer --no-restore
     environment:
       ASPNETCORE_URLS: http://+:5001
       ASPNETCORE_ENVIRONMENT: Development
@@ -85,19 +86,23 @@ services:
         condition: service_completed_successfully
       postgres:
         condition: service_healthy
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:5001/readyz"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 30s
     restart: unless-stopped
 
   # ===========================================================================
-  # Admin - Blazor Management Dashboard (with hot reload)
+  # Admin - Blazor Management Dashboard
   # ===========================================================================
   admin:
-    image: mcr.microsoft.com/dotnet/sdk:10.0
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile.admin
+    image: mingo-identity-admin:dev
     container_name: mingo-admin-dev
-    working_dir: /src
-    volumes:
-      - ../:/src
-    command: >
-      dotnet watch --project src/MinGo.IdServer.Admin --no-restore
     environment:
       ASPNETCORE_URLS: http://+:5002
       ASPNETCORE_ENVIRONMENT: Development
@@ -111,7 +116,13 @@ services:
       - "${ADMIN_PORT:-5002}:5002"
     depends_on:
       idserver:
-        condition: service_started
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:5002/readyz"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 30s
     restart: unless-stopped
 
 volumes:
