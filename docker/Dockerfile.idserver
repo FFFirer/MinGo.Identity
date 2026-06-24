@@ -28,13 +28,13 @@ WORKDIR /app
 
 # Install native dependencies (Kerberos/GSSAPI for LDAP, ICU for globalization)
 # Use Aliyun mirror for faster downloads in China mainland network environment
-# RUN sed -i 's|deb.debian.org|mirrors.aliyun.com|g' /etc/apt/sources.list.d/debian.sources \
-#     && apt-get update \
-#     && apt-get install -y --no-install-recommends \
-#         libgssapi-krb5-2 \
-#         icu-libs \
-#     && rm -rf /var/lib/apt/lists/*
-# ENV DOTNET_SYSTEM_GLOBALIZATION_INVARIANT=0
+RUN sed -i 's|deb.debian.org|mirrors.aliyun.com|g' /etc/apt/sources.list.d/debian.sources \
+    && apt-get update \
+    && apt-get install -y --no-install-recommends \
+        libgssapi-krb5-2 \
+        # icu-libs \
+    && rm -rf /var/lib/apt/lists/*
+ENV DOTNET_SYSTEM_GLOBALIZATION_INVARIANT=0
 
 # Create non-root user
 RUN groupadd --system mingo && useradd --system --gid mingo mingo
