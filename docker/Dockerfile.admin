@@ -28,7 +28,14 @@ WORKDIR /app
 
 # Install ICU globalization support (SimpleIdServer requires CultureInfo)
 # Use Aliyun mirror for faster downloads in China mainland network environment
-RUN sed -i 's|deb.debian.org|mirrors.aliyun.com|g' /etc/apt/sources.list.d/debian.sources \
+# Handle both Debian (aspnet:9.0-) and Ubuntu (aspnet:10.0+) base images
+RUN if [ -f /etc/apt/sources.list.d/debian.sources ]; then \
+        sed -i 's|deb.debian.org|mirrors.aliyun.com|g' /etc/apt/sources.list.d/debian.sources; \
+    elif [ -f /etc/apt/sources.list.d/ubuntu.sources ]; then \
+        sed -i 's|http://archive.ubuntu.com/ubuntu/|http://mirrors.aliyun.com/ubuntu/|g' /etc/apt/sources.list.d/ubuntu.sources; \
+    elif [ -f /etc/apt/sources.list ]; then \
+        sed -i 's|http://archive.ubuntu.com/ubuntu/|http://mirrors.aliyun.com/ubuntu/|g;s|http://deb.debian.org/debian/|http://mirrors.aliyun.com/debian/|g' /etc/apt/sources.list; \
+    fi \
     && apt-get update \
     && apt-get install -y --no-install-recommends \
         # icu-libs \
