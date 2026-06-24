@@ -39,6 +39,7 @@ RUN if [ -f /etc/apt/sources.list.d/debian.sources ]; then \
     && apt-get update \
     && apt-get install -y --no-install-recommends \
         libgssapi-krb5-2 \
+        wget \
         # icu-libs \
     && rm -rf /var/lib/apt/lists/*
 ENV DOTNET_SYSTEM_GLOBALIZATION_INVARIANT=0
