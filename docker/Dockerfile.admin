@@ -36,7 +36,7 @@ WORKDIR /app
 # ENV DOTNET_SYSTEM_GLOBALIZATION_INVARIANT=0
 
 # Create non-root user
-RUN addgroup -S mingo && adduser -S mingo -G mingo
+RUN groupadd --system mingo && useradd --system --gid mingo mingo
 USER mingo
 
 # Copy published artifacts
