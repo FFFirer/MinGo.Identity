@@ -28,10 +28,11 @@ migrateCommand.SetHandler(async () =>
     Console.WriteLine("=== MinGo Identity Migration Tool ===");
 
     // 1. Build DI container (identical to IdServer via SidServerSetup)
+    //    appsettings.json 从运行时目录加载（非项目嵌入），可选 — 配置可通过环境变量传入
     var builder = WebApplication.CreateBuilder();
     builder.Configuration
-        .SetBasePath(AppContext.BaseDirectory)
-        .AddJsonFile("appsettings.json", optional: false)
+        .SetBasePath(Directory.GetCurrentDirectory())
+        .AddJsonFile("appsettings.json", optional: true)
         .AddJsonFile($"appsettings.{builder.Environment.EnvironmentName}.json", optional: true)
         .AddEnvironmentVariables();
     var config = builder.Configuration.Get<IdentityServerConfiguration>()
@@ -74,8 +75,8 @@ return await rootCommand.InvokeAsync(args);
 static IConfiguration LoadAppConfiguration()
 {
     return new ConfigurationBuilder()
-        .SetBasePath(AppContext.BaseDirectory)
-        .AddJsonFile("appsettings.json", optional: false)
+        .SetBasePath(Directory.GetCurrentDirectory())
+        .AddJsonFile("appsettings.json", optional: true)
         .AddEnvironmentVariables()
         .Build();
 }
