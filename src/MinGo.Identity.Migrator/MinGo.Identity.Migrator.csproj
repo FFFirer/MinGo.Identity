@@ -7,6 +7,8 @@
 		<Nullable>enable</Nullable>
 		<RootNamespace>MinGo.Identity.Migrator</RootNamespace>
 		<AssemblyName>MinGo.Identity.Migrator</AssemblyName>
+		<!-- 不从引用的 Web 项目(IdServer)流入 Content 文件，避免 appsettings.json 发布冲突 NETSDK1152 -->
+		<_GetChildProjectCopyToPublishDirectoryItems>false</_GetChildProjectCopyToPublishDirectoryItems>
 	</PropertyGroup>
 
 	<ItemGroup>
@@ -54,4 +56,6 @@
 			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
 		</None>
 	</ItemGroup>
+
+
 </Project>
