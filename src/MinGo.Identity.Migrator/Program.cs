@@ -31,7 +31,7 @@ migrateCommand.SetHandler(async () =>
     //    appsettings.json 从运行时目录加载（非项目嵌入），可选 — 配置可通过环境变量传入
     var builder = WebApplication.CreateBuilder();
     builder.Configuration
-        .SetBasePath(Directory.GetCurrentDirectory())
+        .SetBasePath(AppContext.BaseDirectory)
         .AddJsonFile("appsettings.json", optional: true)
         .AddJsonFile($"appsettings.{builder.Environment.EnvironmentName}.json", optional: true)
         .AddEnvironmentVariables();

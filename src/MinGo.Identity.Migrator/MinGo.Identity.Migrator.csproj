@@ -28,8 +28,8 @@
 		<PackageReference Include="SimpleIdServer.IdServer.Store.EF" />
 		<PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" />
 		<PackageReference Include="Microsoft.EntityFrameworkCore.Relational" />
-		<PackageReference Include="Microsoft.Extensions.Configuration.Json" />
-		<PackageReference Include="Microsoft.Extensions.Configuration.EnvironmentVariables" />
+		<!-- <PackageReference Include="Microsoft.Extensions.Configuration.Json" /> -->
+		<!-- <PackageReference Include="Microsoft.Extensions.Configuration.EnvironmentVariables" /> -->
 		<PackageReference Include="System.CommandLine" />
 		<PackageReference Include="Microsoft.EntityFrameworkCore.Design">
 			<PrivateAssets>all</PrivateAssets>
