@@ -23,17 +23,17 @@ RUN dotnet publish src/MinGo.IdServer.Admin/MinGo.IdServer.Admin.csproj \
     --no-restore
 
 # Stage 2: Runtime
-FROM mcr.microsoft.com/dotnet/aspnet:10.0-slim AS runtime
+FROM mcr.microsoft.com/dotnet/aspnet:10.0 AS runtime
 WORKDIR /app
 
 # Install ICU globalization support (SimpleIdServer requires CultureInfo)
 # Use Aliyun mirror for faster downloads in China mainland network environment
-RUN sed -i 's|deb.debian.org|mirrors.aliyun.com|g' /etc/apt/sources.list.d/debian.sources \
-    && apt-get update \
-    && apt-get install -y --no-install-recommends \
-        icu-libs \
-    && rm -rf /var/lib/apt/lists/*
-ENV DOTNET_SYSTEM_GLOBALIZATION_INVARIANT=0
+# RUN sed -i 's|deb.debian.org|mirrors.aliyun.com|g' /etc/apt/sources.list.d/debian.sources \
+#     && apt-get update \
+#     && apt-get install -y --no-install-recommends \
+#         icu-libs \
+#     && rm -rf /var/lib/apt/lists/*
+# ENV DOTNET_SYSTEM_GLOBALIZATION_INVARIANT=0
 
 # Create non-root user
 RUN addgroup -S mingo && adduser -S mingo -G mingo
