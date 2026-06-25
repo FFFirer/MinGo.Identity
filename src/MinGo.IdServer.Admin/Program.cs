@@ -77,6 +77,10 @@ if (!app.Environment.IsDevelopment())
     app.UseExceptionHandler("/Error");
 }
 
+// Serve static files from wwwroot/ (_framework/blazor.web.js, _content/*, lib/*)
+// Required in Production/Docker; Development mode relies on SDK Static Web Assets middleware.
+app.UseStaticFiles();
+
 app.UseIdserverAdmin();
 
 if (idserverAdminConfiguration.ForceHttps)
