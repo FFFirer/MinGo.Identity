@@ -24,7 +24,8 @@ RUN --mount=type=cache,target=/root/.nuget/packages \
     dotnet build src/MinGo.IdServer/MinGo.IdServer.csproj \
     -c Release 
 
-RUN dotnet publish src/MinGo.IdServer/MinGo.IdServer.csproj \
+RUN --mount=type=cache,target=/root/.nuget/packages \
+    dotnet publish src/MinGo.IdServer/MinGo.IdServer.csproj \
     -c Release \
     -o /app/publish \
     --no-build
