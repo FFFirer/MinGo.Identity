@@ -64,12 +64,6 @@ if (idserverAdminConfiguration.ForceHttps)
 
 adminBuilder.UpdateOpenid(idserverAdminConfiguration.ClientId, idserverAdminConfiguration.ClientSecret, idserverAdminConfiguration.Scopes, idserverAdminConfiguration.IgnoreCertificateError);
 
-// ────────────────────────────────────────────────────────────────
-// Health checks — config-driven, auto-registers IdServer OIDC
-// and SCIM endpoint checks from IdentityServerAdminConfiguration.
-// ────────────────────────────────────────────────────────────────
-builder.Services.AddIdentityHealthChecks(builder.Configuration, includeIdServerCheck: false);
-
 var app = builder.Build();
 
 if (app.Environment.IsDevelopment())
@@ -84,15 +78,14 @@ if (!app.Environment.IsDevelopment())
 }
 
 app.UseIdserverAdmin();
-app.UseHttpsRedirection();
+
+if (idserverAdminConfiguration.ForceHttps)
+{
+    app.UseHttpsRedirection();
+}
 
 // app.UseRouting();
 app.UseAntiforgery();
-
-// ────────────────────────────────────────────────────────────────
-// Health check probes (K8s style)
-// ────────────────────────────────────────────────────────────────
-app.MapIdentityHealthChecks();
 
 app.MapRazorComponents<App>()
     .AddInteractiveServerRenderMode();
