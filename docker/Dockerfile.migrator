@@ -15,14 +15,24 @@ COPY src/MinGo.Identity.Migrator/MinGo.Identity.Migrator.csproj src/MinGo.Identi
 COPY src/MinGo.IdServer/MinGo.IdServer.csproj src/MinGo.IdServer/
 
 # Restore with cached packages
-RUN dotnet restore src/MinGo.Identity.Migrator/MinGo.Identity.Migrator.csproj
+RUN --mount=type=cache,target=/root/.nuget/packages \
+    dotnet restore src/MinGo.Identity.Migrator/MinGo.Identity.Migrator.csproj
 
 # Copy source and publish
-COPY . .
-RUN dotnet publish src/MinGo.Identity.Migrator/MinGo.Identity.Migrator.csproj \
+COPY src/MinGo.Identity.Configuration/ src/MinGo.Identity.Configuration/
+COPY src/MinGo.Identity.Migrations/ src/MinGo.Identity.Migrations/
+COPY src/MinGo.Identity.Migrator/ src/MinGo.Identity.Migrator/
+COPY src/MinGo.IdServer/ src/MinGo.IdServer/
+
+RUN --mount=type=cache,target=/root/.nuget/packages \
+    dotnet build src/MinGo.Identity.Migrator/MinGo.Identity.Migrator.csproj \
+    -c Release
+    
+RUN --mount=type=cache,target=/root/.nuget/packages \
+    dotnet publish src/MinGo.Identity.Migrator/MinGo.Identity.Migrator.csproj \
     -c Release \
     -o /app/publish \
-    --no-restore
+    --no-build
 
 # Stage 2: Runtime
 FROM mcr.microsoft.com/dotnet/aspnet:10.0-alpine AS runtime

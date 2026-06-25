@@ -10,29 +10,26 @@ WORKDIR /src
 # Copy project files for restore (layer caching optimization)
 COPY Directory.Build.props Directory.Packages.props nuget.config MinGo.Identity.slnx ./
 COPY src/MinGo.Identity.Configuration/MinGo.Identity.Configuration.csproj src/MinGo.Identity.Configuration/
-COPY src/MinGo.Identity.Migrations/MinGo.Identity.Migrations.csproj src/MinGo.Identity.Migrations/
-COPY src/MinGo.Identity.Migrator/MinGo.Identity.Migrator.csproj src/MinGo.Identity.Migrator/
-COPY src/MinGo.IdServer/MinGo.IdServer.csproj src/MinGo.IdServer/
 COPY src/MinGo.IdServer.Admin/MinGo.IdServer.Admin.csproj src/MinGo.IdServer.Admin/
-COPY tests/MinGo.Identity.Migrator.IntegrationTests/MinGo.Identity.Migrator.IntegrationTests.csproj tests/MinGo.Identity.Migrator.IntegrationTests/
-COPY tests/MinGo.Identity.UnitTests/MinGo.Identity.UnitTests.csproj tests/MinGo.Identity.UnitTests/
 
 # Restore with cached packages
-RUN dotnet restore 
+RUN --mount=type=cache,target=/root/.nuget/packages \
+    dotnet restore src/MinGo.IdServer.Admin/MinGo.IdServer.Admin.csproj
 
 # Copy source and publish
-COPY . .
-RUN ls -la 
-RUN dotnet build src/MinGo.IdServer.Admin/MinGo.IdServer.Admin.csproj \
-    -c Release \
-    --no-restore 
+COPY src/MinGo.Identity.Configuration/ src/MinGo.Identity.Configuration/
+COPY src/MinGo.IdServer.Admin/ src/MinGo.IdServer.Admin/
 
-RUN dotnet publish src/MinGo.IdServer.Admin/MinGo.IdServer.Admin.csproj \
+RUN --mount=type=cache,target=/root/.nuget/packages \
+    dotnet build src/MinGo.IdServer.Admin/MinGo.IdServer.Admin.csproj \
+    -c Release 
+
+RUN --mount=type=cache,target=/root/.nuget/packages \
+    dotnet publish src/MinGo.IdServer.Admin/MinGo.IdServer.Admin.csproj \
     -c Release \
     -o /app/publish \
     --no-build
 
-RUN ls -la /app/publish/wwwroot/
 RUN ls -la /app/publish/wwwroot/_framework/ || echo "❌ _framework NOT GENERATED"
 
 # Stage 2: Runtime
