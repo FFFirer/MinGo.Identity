@@ -1,6 +1,9 @@
 # Git
 .git/
 .gitignore
+.vscode/
+.gitea/
+.omo/
 
 # .NET build artifacts
 **/bin/
@@ -44,5 +47,4 @@ nul
 *.env
 
 **/node_modules/
-.omo/
 docker/
