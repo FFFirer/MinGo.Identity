@@ -50,7 +50,7 @@ services:
     image: mingo-identity-migrator:dev
     container_name: mingo-migrator-dev
     environment:
-      DOTNET_ENVIRONMENT: Development
+      DOTNET_ENVIRONMENT: Production
       StorageConfiguration__Type: ${STORAGE_TYPE:-POSTGRE}
       StorageConfiguration__ConnectionString: Host=postgres;Port=5432;Database=${POSTGRES_DB:-mingo_identity};Username=${POSTGRES_USER:-postgres};Password=${POSTGRES_PASSWORD:-postgres}
       Authority: ${AUTHORITY:-http://localhost:5001}
@@ -72,7 +72,7 @@ services:
     container_name: mingo-idserver-dev
     environment:
       ASPNETCORE_URLS: http://+:5001
-      ASPNETCORE_ENVIRONMENT: Development
+      ASPNETCORE_ENVIRONMENT: Production
       StorageConfiguration__Type: ${STORAGE_TYPE:-POSTGRE}
       StorageConfiguration__ConnectionString: Host=postgres;Port=5432;Database=${POSTGRES_DB:-mingo_identity};Username=${POSTGRES_USER:-postgres};Password=${POSTGRES_PASSWORD:-postgres}
       Authority: ${AUTHORITY:-http://localhost:5001}
@@ -105,7 +105,7 @@ services:
     container_name: mingo-admin-dev
     environment:
       ASPNETCORE_URLS: http://+:5002
-      ASPNETCORE_ENVIRONMENT: Development
+      ASPNETCORE_ENVIRONMENT: Production
       IdserverBaseUrl: ${IDSERVER_BASE_URL:-http://idserver:5001}
       ClientId: ${ADMIN_CLIENT_ID:-SIDS-manager}
       ClientSecret: ${ADMIN_CLIENT_SECRET:-password}

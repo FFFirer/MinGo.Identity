@@ -42,3 +42,7 @@ nul
 # Environment
 .env
 *.env
+
+**/node_modules/
+.omo/
+docker/

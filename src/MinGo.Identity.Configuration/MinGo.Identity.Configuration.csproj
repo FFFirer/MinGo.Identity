@@ -11,16 +11,16 @@
 
 	<ItemGroup>
 		<FrameworkReference Include="Microsoft.AspNetCore.App" />
-		<PackageReference Include="Microsoft.Extensions.Diagnostics.HealthChecks" />
+		<!-- <PackageReference Include="Microsoft.Extensions.Diagnostics.HealthChecks" /> -->
 		<PackageReference Include="Microsoft.EntityFrameworkCore" />
 		<PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" />
 		<PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" />
 		<PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" />
 		<PackageReference Include="Pomelo.EntityFrameworkCore.MySql" />
 		<PackageReference Include="Microsoft.EntityFrameworkCore.InMemory" />
-		<PackageReference Include="Microsoft.Extensions.Configuration" />
-		<PackageReference Include="Microsoft.Extensions.Configuration.Binder" />
-		<PackageReference Include="Microsoft.Extensions.Configuration.Json" />
+		<!-- <PackageReference Include="Microsoft.Extensions.Configuration" /> -->
+		<!-- <PackageReference Include="Microsoft.Extensions.Configuration.Binder" /> -->
+		<!-- <PackageReference Include="Microsoft.Extensions.Configuration.Json" /> -->
 
 		<!-- 健康检查数据库客户端 -->
 		<PackageReference Include="Microsoft.Data.SqlClient" />
