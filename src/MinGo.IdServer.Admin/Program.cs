@@ -2,6 +2,7 @@ using OpenTelemetry.Trace;
 using Serilog;
 using MinGo.IdServer.Admin;
 using MinGo.IdServer.Admin.Components;
+using Microsoft.AspNetCore.HttpOverrides;
 using MinGo.Identity.Configuration;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -64,6 +65,23 @@ if (idserverAdminConfiguration.ForceHttps)
 
 adminBuilder.UpdateOpenid(idserverAdminConfiguration.ClientId, idserverAdminConfiguration.ClientSecret, idserverAdminConfiguration.Scopes, idserverAdminConfiguration.IgnoreCertificateError);
 
+// ────────────────────────────────────────────────────────────────
+// Forwarded headers — trust X-Forwarded-Host/Proto/For from YARP.
+// Must be configured before builder.Build() so middleware pipeline
+// picks it up. Aligns with IdServer's existing fix in Program.cs.
+// ────────────────────────────────────────────────────────────────
+if (idserverAdminConfiguration.IsForwardedEnabled)
+{
+    builder.Services.Configure<ForwardedHeadersOptions>(options =>
+    {
+        options.ForwardedHeaders = ForwardedHeaders.XForwardedFor
+                                 | ForwardedHeaders.XForwardedProto
+                                 | ForwardedHeaders.XForwardedHost;
+        options.KnownIPNetworks.Clear();
+        options.KnownProxies.Clear();
+    });
+}
+
 var app = builder.Build();
 
 if (app.Environment.IsDevelopment())
@@ -80,6 +98,11 @@ if (!app.Environment.IsDevelopment())
 // Serve static files from wwwroot/ (_framework/blazor.web.js, _content/*, lib/*)
 // Required in Production/Docker; Development mode relies on SDK Static Web Assets middleware.
 app.UseStaticFiles();
+
+if (idserverAdminConfiguration.IsForwardedEnabled)
+{
+    app.UseForwardedHeaders();
+}
 
 app.UseIdserverAdmin();
 
