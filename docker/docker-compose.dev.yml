@@ -12,6 +12,17 @@
 #   docker compose -f docker/docker-compose.dev.yml down
 # =============================================================================
 
+# =============================================================================
+# Shared environment variables — reused by migrator & idserver
+# =============================================================================
+x-idserver-env: &idserver-env
+  StorageConfiguration__Type: ${STORAGE_TYPE:-POSTGRE}
+  StorageConfiguration__ConnectionString: Host=postgres;Port=5432;Database=${POSTGRES_DB:-mingo_identity};Username=${POSTGRES_USER:-postgres};Password=${POSTGRES_PASSWORD:-postgres}
+  Authority: ${AUTHORITY:-http://localhost:5001}
+  AdminUiUrl: ${ADMIN_UI_URL:-http://localhost:5002}
+  IsRealmEnabled: ${IS_REALM_ENABLED:-true}
+  IsForwardedEnabled: ${IS_FORWARDED_ENABLED:-false}
+
 services:
   # ===========================================================================
   # PostgreSQL Database
@@ -51,12 +62,7 @@ services:
     container_name: mingo-migrator-dev
     environment:
       DOTNET_ENVIRONMENT: Production
-      StorageConfiguration__Type: ${STORAGE_TYPE:-POSTGRE}
-      StorageConfiguration__ConnectionString: Host=postgres;Port=5432;Database=${POSTGRES_DB:-mingo_identity};Username=${POSTGRES_USER:-postgres};Password=${POSTGRES_PASSWORD:-postgres}
-      Authority: ${AUTHORITY:-http://localhost:5001}
-      AdminUiUrl: ${ADMIN_UI_URL:-http://localhost:5002}
-      IsRealmEnabled: ${IS_REALM_ENABLED:-true}
-      IsForwardedEnabled: ${IS_FORWARDED_ENABLED:-false}
+      <<: *idserver-env
     depends_on:
       postgres:
         condition: service_healthy
@@ -73,12 +79,7 @@ services:
     environment:
       ASPNETCORE_URLS: http://+:5001
       ASPNETCORE_ENVIRONMENT: Production
-      StorageConfiguration__Type: ${STORAGE_TYPE:-POSTGRE}
-      StorageConfiguration__ConnectionString: Host=postgres;Port=5432;Database=${POSTGRES_DB:-mingo_identity};Username=${POSTGRES_USER:-postgres};Password=${POSTGRES_PASSWORD:-postgres}
-      Authority: ${AUTHORITY:-http://localhost:5001}
-      AdminUiUrl: ${ADMIN_UI_URL:-http://localhost:5002}
-      IsRealmEnabled: ${IS_REALM_ENABLED:-true}
-      IsForwardedEnabled: ${IS_FORWARDED_ENABLED:-false}
+      <<: *idserver-env
     ports:
       - "${IDSERVER_PORT:-5001}:5001"
     depends_on:

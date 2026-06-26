@@ -12,6 +12,17 @@
 #   docker compose -f docker/docker-compose.prod.yml up -d idserver admin
 # =============================================================================
 
+# =============================================================================
+# Shared environment variables — reused by migrate & idserver
+# =============================================================================
+x-idserver-env: &idserver-env
+  StorageConfiguration__Type: ${STORAGE_TYPE:-POSTGRE}
+  StorageConfiguration__ConnectionString: ${CONNECTION_STRING:-Host=postgres;Port=5432;Database=mingo_identity;Username=postgres;Password=postgres}
+  Authority: ${AUTHORITY:-http://localhost:5001}
+  AdminUiUrl: ${ADMIN_UI_URL:-http://localhost:5002}
+  IsRealmEnabled: ${IS_REALM_ENABLED:-true}
+  IsForwardedEnabled: ${IS_FORWARDED_ENABLED:-false}
+
 services:
   # ===========================================================================
   # PostgreSQL Database
@@ -48,9 +59,8 @@ services:
       context: ..
       dockerfile: docker/Dockerfile.migrator
     environment:
-      StorageConfiguration__Type: ${STORAGE_TYPE:-POSTGRE}
-      StorageConfiguration__ConnectionString: ${CONNECTION_STRING:-Host=postgres;Port=5432;Database=mingo_identity;Username=postgres;Password=postgres}
       DOTNET_ENVIRONMENT: Production
+      <<: *idserver-env
     depends_on:
       postgres:
         condition: service_healthy
@@ -70,12 +80,7 @@ services:
     environment:
       ASPNETCORE_URLS: http://+:5001
       ASPNETCORE_ENVIRONMENT: ${ASPNETCORE_ENVIRONMENT:-Production}
-      StorageConfiguration__Type: ${STORAGE_TYPE:-POSTGRE}
-      StorageConfiguration__ConnectionString: ${CONNECTION_STRING:-Host=postgres;Port=5432;Database=mingo_identity;Username=postgres;Password=postgres}
-      Authority: ${AUTHORITY:-http://localhost:5001}
-      AdminUiUrl: ${ADMIN_UI_URL:-http://localhost:5002}
-      IsRealmEnabled: ${IS_REALM_ENABLED:-true}
-      IsForwardedEnabled: ${IS_FORWARDED_ENABLED:-false}
+      <<: *idserver-env
     ports:
       - "${IDSERVER_PORT:-5001}:5001"
     depends_on:
