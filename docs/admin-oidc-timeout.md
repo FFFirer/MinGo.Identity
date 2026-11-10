@@ -69,13 +69,13 @@ avoid enabling blanket authentication Trace logging.
 
 The new `.github/workflows/admin-build.yml` uses GitHub Actions on push, PR and
 manual dispatch. It builds Admin, runs unit tests and builds the Admin Docker
-image, uploading a SHA-labelled Docker tar and TRX report as workflow artifacts.
-It does not publish images or deploy production. The existing `.gitea` workflows
+image, publishing SHA-labelled images to `ghcr.io/fffirer/identity-admin` and uploading a TRX report.
+Pull requests build without publishing. The workflow does not deploy production. The existing `.gitea` workflows
 are unchanged; their presence is not evidence of a GitHub build.
 
 1. Push the change to the intended GitHub repository and wait for the workflow
    to succeed. Record the run URL and exact commit SHA.
-2. Load the resulting Docker image into the deployment registry/environment and
+2. Pin the published GHCR image digest in the deployment repository and
    apply the private URL settings above as part of the deployment.
 3. Start a new browser login and confirm discovery and JWKS complete promptly;
    then verify token and userinfo calls and the final authenticated Admin page.
