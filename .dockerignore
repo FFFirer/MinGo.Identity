@@ -13,6 +13,8 @@
 *.binlog
 
 # NuGet
+.packages/
+.github/
 **/.nuget/
 **/*.nuget.props
 **/*.nuget.targets

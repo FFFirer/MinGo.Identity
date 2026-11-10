@@ -6,6 +6,11 @@ namespace MinGo.IdServer.Admin;
 
 public class IdentityServerAdminConfiguration
 {
+    // Keep IdserverBaseUrl public: it controls browser redirects and issuer validation.
+    public string? BackchannelBaseUrl { get; set; }
+
+    public int BackchannelTimeoutSeconds { get; set; } = 15;
+
     public bool ForceHttps
     {
         get; set;

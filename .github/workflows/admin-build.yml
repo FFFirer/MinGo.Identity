@@ -1,0 +1,52 @@
+name: Admin build and tests
+run-name: "Admin build - ${{ github.ref_name }}"
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: "admin-build-${{ github.ref }}"
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: "10.0.x"
+      - name: Build Admin
+        run: dotnet build src/MinGo.IdServer.Admin/MinGo.IdServer.Admin.csproj -c Release
+      - name: Run unit tests
+        run: dotnet test tests/MinGo.Identity.UnitTests/MinGo.Identity.UnitTests.csproj -c Release --logger "trx;LogFileName=unit-tests.trx"
+      - name: Verify real Admin OIDC transport and body timeout
+        run: python3 scripts/smoke-admin-oidc.py
+      - name: Upload test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: unit-test-results
+          path: tests/MinGo.Identity.UnitTests/TestResults/*.trx
+          if-no-files-found: warn
+      - uses: docker/setup-buildx-action@v3
+      - name: Build Admin container
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: docker/Dockerfile.admin
+          push: false
+          tags: "mingo/identity-admin:sha-${{ github.sha }}"
+          outputs: type=docker,dest=/tmp/identity-admin.tar
+      - name: Upload Admin image
+        uses: actions/upload-artifact@v4
+        with:
+          name: "identity-admin-${{ github.sha }}"
+          path: /tmp/identity-admin.tar
+          retention-days: 7

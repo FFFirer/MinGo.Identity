@@ -109,6 +109,8 @@ services:
       ASPNETCORE_URLS: http://+:5002
       ASPNETCORE_ENVIRONMENT: ${ASPNETCORE_ENVIRONMENT:-Production}
       IdserverBaseUrl: ${IDSERVER_BASE_URL:-http://idserver:5001}
+      BackchannelBaseUrl: ${ADMIN_BACKCHANNEL_BASE_URL:-http://idserver:5001}
+      BackchannelTimeoutSeconds: ${ADMIN_BACKCHANNEL_TIMEOUT_SECONDS:-15}
       ClientId: ${ADMIN_CLIENT_ID:-SIDS-manager}
       ClientSecret: ${ADMIN_CLIENT_SECRET:-password}
       IsRealmEnabled: ${IS_REALM_ENABLED:-true}

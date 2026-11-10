@@ -22,6 +22,7 @@
 
 	<ItemGroup>
 		<ProjectReference Include="..\..\src\MinGo.Identity.Configuration\MinGo.Identity.Configuration.csproj" />
+		<Compile Include="..\..\src\MinGo.IdServer.Admin\OidcBackchannelHandler.cs" Link="Admin\OidcBackchannelHandler.cs" />
 	</ItemGroup>
 
 </Project>
