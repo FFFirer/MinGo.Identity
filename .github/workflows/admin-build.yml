@@ -1,4 +1,4 @@
-name: Admin build and tests
+name: Admin build, test and publish
 run-name: "Admin build - ${{ github.ref_name }}"
 
 on:
@@ -8,6 +8,7 @@ on:
 
 permissions:
   contents: read
+  packages: write
 
 concurrency:
   group: "admin-build-${{ github.ref }}"
@@ -36,17 +37,26 @@ jobs:
           path: tests/MinGo.Identity.UnitTests/TestResults/*.trx
           if-no-files-found: warn
       - uses: docker/setup-buildx-action@v3
+      - name: Determine GHCR image
+        id: image
+        shell: bash
+        env:
+          OWNER: ${{ github.repository_owner }}
+        run: echo "name=ghcr.io/${OWNER,,}/identity-admin" >> "$GITHUB_OUTPUT"
+      - name: Log in to GHCR
+        if: github.event_name != 'pull_request'
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
       - name: Build Admin container
         uses: docker/build-push-action@v6
         with:
           context: .
           file: docker/Dockerfile.admin
-          push: false
-          tags: "mingo/identity-admin:sha-${{ github.sha }}"
-          outputs: type=docker,dest=/tmp/identity-admin.tar
-      - name: Upload Admin image
-        uses: actions/upload-artifact@v4
-        with:
-          name: "identity-admin-${{ github.sha }}"
-          path: /tmp/identity-admin.tar
-          retention-days: 7
+          push: ${{ github.event_name != 'pull_request' }}
+          tags: "${{ steps.image.outputs.name }}:sha-${{ github.sha }}"
+          labels: |
+            org.opencontainers.image.source=https://github.com/${{ github.repository }}
+            org.opencontainers.image.revision=${{ github.sha }}
